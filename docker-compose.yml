@@ -11,11 +11,6 @@ services:
     ports:
       - "8095:8080"
     env_file: .env
-    volumes:
-      - /etc/pihole:/data/pihole:rw
-      - /etc/dnsmasq.d:/data/dnsmasq:rw
-      - /var/lib/misc:/data/leases:ro
-      - /var/log/pihole.log:/data/pihole.log:ro
     networks:
       - default
     healthcheck:
