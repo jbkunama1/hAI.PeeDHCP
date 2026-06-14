@@ -67,7 +67,7 @@ def ph(method, path, **kwargs):
     return None, "Auth failed after retry"
 
 
-# ── Routes ──────────────────────────────────────────────────────────────────
+# ── Routes ─────────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -97,12 +97,13 @@ def get_leases():
     } for l in leases])
 
 
+# PiHole v6 verwendet /api/dhcp/static_leases (nicht /dhcp/static)
 @app.route("/api/static", methods=["GET"])
 def get_static():
-    data, err = ph("get", "/dhcp/static")
+    data, err = ph("get", "/dhcp/static_leases")
     if err:
         return jsonify({"error": err}), 502
-    entries = data.get("staticleases", data.get("static", data)) if isinstance(data, dict) else data
+    entries = data.get("static_leases", data.get("staticleases", data.get("static", data))) if isinstance(data, dict) else data
     return jsonify([{
         "mac":      e.get("hwaddr", e.get("mac", "")),
         "ip":       e.get("ip",     e.get("address", "")),
@@ -116,7 +117,7 @@ def add_static():
     d = request.json
     if not d.get("mac") or not d.get("ip"):
         return jsonify({"error": "mac and ip required"}), 400
-    data, err = ph("post", "/dhcp/static", json={
+    data, err = ph("post", "/dhcp/static_leases", json={
         "hwaddr":   d["mac"],
         "ip":       d["ip"],
         "hostname": d.get("hostname", ""),
@@ -128,7 +129,7 @@ def add_static():
 
 @app.route("/api/static/<mac>", methods=["DELETE"])
 def del_static(mac):
-    _, err = ph("delete", f"/dhcp/static/{mac}")
+    _, err = ph("delete", f"/dhcp/static_leases/{mac}")
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
