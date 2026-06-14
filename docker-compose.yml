@@ -17,7 +17,7 @@ services:
       - /var/lib/misc:/data/leases:ro
       - /var/log/pihole.log:/data/pihole.log:ro
     networks:
-      - pihole_net
+      - default
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
       interval: 30s
@@ -26,8 +26,7 @@ services:
       start_period: 10s
     labels:
       - "traefik.enable=false"
-      # - "traefik.http.routers.dhcp-admin.rule=Host(`dhcp.intern.example.com`)"
 
 networks:
-  pihole_net:
-    external: true
+  default:
+    driver: bridge
