@@ -73,11 +73,12 @@ tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--soff)}
 .mono{font-family:var(--fm)}
 .badge{display:inline-flex;align-items:center;gap:.25rem;padding:2px .5rem;border-radius:var(--rf);font-size:.8125rem;font-weight:500}
-.bg{background:var(--okhl);color:var(--ok)}.bb{background:var(--bluhl);color:var(--blu)}.bo{background:var(--warnhl);color:var(--warn)}
+.bg{background:var(--okhl);color:var(--ok)}.bb{background:var(--bluhl);color:var(--blu)}.bo{background:var(--warnhl);color:var(--warn)}.bp{background:var(--prihl);color:var(--pri)}
 .btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--rm);font-size:.9375rem;font-weight:500;cursor:pointer;border:none}
 .btnp{background:var(--pri);color:#fff}.btnp:hover{background:var(--prih)}
 .btns{background:var(--soff);color:var(--txt);border:1px solid rgba(128,128,128,.15)}.btns:hover{background:var(--sdyn)}
 .btnd{background:var(--errhl);color:var(--err)}
+.btnw{background:var(--warnhl);color:var(--warn)}
 .bsm{padding:.25rem .75rem;font-size:.8125rem}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .fg1{grid-column:1/-1}
@@ -108,6 +109,7 @@ tr:hover td{background:var(--soff)}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .empty{padding:2rem;text-align:center;color:var(--mut);font-size:.9rem}
+.act-btns{display:flex;gap:.35rem;flex-wrap:nowrap}
 @media(max-width:768px){.app{grid-template-columns:1fr}.sidebar{display:none}.fg{grid-template-columns:1fr}}
 </style>
 </head>
@@ -129,6 +131,7 @@ tr:hover td{background:var(--soff)}
     <div class="nlbl">Dashboard</div>
     <a class="nitem active" data-view="overview"><i data-lucide="layout-dashboard"></i> Übersicht</a>
     <div class="nlbl">DHCP</div>
+    <a class="nitem" data-view="all"><i data-lucide="network"></i> Alle Geräte</a>
     <a class="nitem" data-view="leases"><i data-lucide="list"></i> Aktive Leases</a>
     <a class="nitem" data-view="static"><i data-lucide="bookmark"></i> Statische Einträge</a>
     <a class="nitem" data-view="config"><i data-lucide="settings"></i> Konfiguration</a>
@@ -149,6 +152,38 @@ tr:hover td{background:var(--soff)}
       <div class="card">
         <div class="ch"><span class="ct">Zuletzt gesehen</span><button class="btn btns bsm" onclick="initAll()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Aktualisieren</button></div>
         <div class="tw"><table><thead><tr><th>Hostname</th><th>IP-Adresse</th><th>MAC</th><th>Lease bis</th><th>Typ</th></tr></thead><tbody id="rtb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody></table></div>
+      </div>
+    </div>
+
+    <!-- ALLE GERÄTE -->
+    <div class="view" id="view-all">
+      <div class="ph"><h1 class="pt">Alle Geräte</h1><p class="pd">Aktive Leases + Statische Einträge kombiniert</p></div>
+      <div class="card">
+        <div class="ch">
+          <div class="tbar">
+            <div class="sw"><i data-lucide="search"></i><input class="si" id="allsearch" type="text" placeholder="Hostname, IP oder MAC…" oninput="filterAll()"></div>
+            <select id="allfilter" class="fi" style="width:auto;padding:.4rem .75rem" onchange="filterAll()">
+              <option value="all">Alle Typen</option>
+              <option value="dynamic">Nur dynamisch</option>
+              <option value="static">Nur statisch</option>
+              <option value="static+active">Statisch + Aktiv</option>
+            </select>
+          </div>
+          <button class="btn btns bsm" onclick="loadAll()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Neu laden</button>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th class="sortable" data-table="all" data-col="hostname">Hostname <i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="all" data-col="ip">IP-Adresse <i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="all" data-col="mac">MAC <i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="all" data-col="expires">Lease bis <i class="sort-icon">⇅</i></th>
+              <th>Typ</th>
+              <th>Aktionen</th>
+            </tr></thead>
+            <tbody id="alltb"><tr><td colspan="6" class="empty">Lade…</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -177,7 +212,7 @@ tr:hover td{background:var(--soff)}
 
     <!-- STATIC -->
     <div class="view" id="view-static">
-      <div class="ph"><h1 class="pt">Statische Zuweisungen</h1><p class="pd">Quelle: PiHole v6 /api/dhcp/static_leases</p></div>
+      <div class="ph"><h1 class="pt">Statische Zuweisungen</h1><p class="pd">Quelle: PiHole v6 /api/config/dhcp hosts</p></div>
       <div class="ib ibo"><div class="ibtitle">⚠️ Hinweis</div><div class="ibtxt">Änderungen werden direkt via PiHole API gespeichert.</div></div>
       <div class="card">
         <div class="ch"><span class="ct">Statische Einträge</span>
@@ -242,7 +277,7 @@ tr:hover td{background:var(--soff)}
 <!-- MODAL -->
 <div class="mbg" id="amodal">
   <div class="modal">
-    <div class="mhd"><h2 class="mtl">Statischen Eintrag hinzufügen</h2><button class="bico" onclick="closeModal()"><i data-lucide="x"></i></button></div>
+    <div class="mhd"><h2 class="mtl" id="modal-title">Statischen Eintrag hinzufügen</h2><button class="bico" onclick="closeModal()"><i data-lucide="x"></i></button></div>
     <div class="fg">
       <div class="fgrp"><label class="flbl">MAC-Adresse *</label><input class="fi mono" id="nm" type="text" placeholder="aa:bb:cc:dd:ee:ff"></div>
       <div class="fgrp"><label class="flbl">IP-Adresse *</label><input class="fi mono" id="ni" type="text" placeholder="192.168.1.50"></div>
@@ -255,8 +290,8 @@ tr:hover td{background:var(--soff)}
 <div class="tcontainer" id="tc"></div>
 
 <script>
-let leases=[], statics=[], cfg={}, curLogFilter='all';
-const sortState={leases:{col:null,dir:'asc'},static:{col:null,dir:'asc'}};
+let leases=[], statics=[], allDevices=[], cfg={}, curLogFilter='all';
+const sortState={leases:{col:null,dir:'asc'},static:{col:null,dir:'asc'},all:{col:'ip',dir:'asc'}};
 
 async function api(method,path,body){
   try{
@@ -307,9 +342,7 @@ function updateSortHeaders(table){
     if(th.dataset.col===col){
       th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
       if(ic) ic.textContent=dir==='asc'?'↑':'↓';
-    } else {
-      if(ic) ic.textContent='⇅';
-    }
+    } else { if(ic) ic.textContent='⇅'; }
   });
 }
 
@@ -317,21 +350,108 @@ function handleSortClick(th){
   const table=th.dataset.table,col=th.dataset.col;
   if(sortState[table].col===col){
     sortState[table].dir=sortState[table].dir==='asc'?'desc':'asc';
-  } else {
-    sortState[table].col=col;
-    sortState[table].dir='asc';
-  }
+  } else { sortState[table].col=col; sortState[table].dir='asc'; }
   updateSortHeaders(table);
   if(table==='leases') renderLeases();
   if(table==='static') renderStatic();
+  if(table==='all') renderAll();
 }
 
 document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>handleSortClick(th)));
 
+// ── Alle Geräte ────────────────────────────────────────────────
+async function loadAll(){
+  document.getElementById('alltb').innerHTML='<tr><td colspan="6" class="empty"><span class="spin"></span> Lade…</td></tr>';
+  const [d,e]=await api('GET','/api/all_devices');
+  if(e){toast('Geräte: '+e,'error');return;}
+  allDevices=d||[];
+  renderAll();
+}
+
+function renderAll(){
+  const tb=document.getElementById('alltb');
+  let data=sortData(allDevices,'all');
+  const q=(document.getElementById('allsearch')?.value||'').toLowerCase();
+  const f=document.getElementById('allfilter')?.value||'all';
+  if(q) data=data.filter(d=>(d.hostname+d.ip+d.mac).toLowerCase().includes(q));
+  if(f!=='all') data=data.filter(d=>d.type===f);
+  if(!data.length){tb.innerHTML='<tr><td colspan="6" class="empty">Keine Einträge</td></tr>';return;}
+  tb.innerHTML=data.map(d=>{
+    const mac=d.mac, ip=d.ip, hn=d.hostname||'';
+    let typeBadge='';
+    if(d.type==='static+active') typeBadge='<span class="badge bp">Statisch+Aktiv</span>';
+    else if(d.type==='static')   typeBadge='<span class="badge bb">Statisch</span>';
+    else                          typeBadge='<span class="badge bg">Dynamisch</span>';
+
+    let actions='';
+    // Promote: nur wenn noch nicht statisch
+    if(!d.is_static){
+      actions+=`<button class="btn btns bsm" onclick="promoteDevice('${mac}','${ip}','${hn}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button>`;
+    }
+    // Verlängern: nur wenn aktiver Lease
+    if(d.type==='dynamic'||d.type==='static+active'){
+      actions+=`<button class="btn btnw bsm" onclick="renewDevice('${mac}','${hn}')" title="Lease verlängern/erneuern"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button>`;
+    }
+    // Löschen statisch
+    if(d.is_static){
+      actions+=`<button class="btn btnd bsm" onclick="delStaticDevice('${mac}','${hn}')" title="Statischen Eintrag löschen"><i data-lucide="bookmark-x" style="width:12px;height:12px"></i></button>`;
+    }
+    // Lease löschen
+    if(d.type==='dynamic'||d.type==='static+active'){
+      actions+=`<button class="btn btnd bsm" onclick="delLeaseDevice('${mac}','${hn}')" title="Aktiven Lease löschen"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>`;
+    }
+
+    return `<tr>
+      <td>${hn||'<span style="color:var(--fnt)">*</span>'}</td>
+      <td class="mono">${ip}</td>
+      <td class="mono" style="color:var(--mut)">${mac}</td>
+      <td style="color:var(--mut)">${fmtExp(d.expires)}</td>
+      <td>${typeBadge}</td>
+      <td><div class="act-btns">${actions}</div></td>
+    </tr>`;
+  }).join('');
+  lucide.createIcons();
+}
+
+function filterAll(){renderAll();}
+
+async function promoteDevice(mac,ip,hostname){
+  document.getElementById('nm').value=mac;
+  document.getElementById('ni').value=ip;
+  document.getElementById('nh').value=hostname;
+  document.getElementById('modal-title').textContent='Als statisch fixieren';
+  openModal();
+}
+
+async function renewDevice(mac,hostname){
+  if(!confirm(`Lease für ${hostname||mac} erneuern?\n(Gerät erhält bei nächster DHCP-Anfrage neuen Lease)`)) return;
+  const [,e]=await api('POST','/api/lease/renew',{mac});
+  if(e){toast('Fehler: '+e,'error');return;}
+  toast(`Lease für ${hostname||mac} zurückgesetzt`,'success');
+  setTimeout(loadAll,1000);
+}
+
+async function delStaticDevice(mac,hostname){
+  if(!confirm(`Statischen Eintrag für ${hostname||mac} löschen?`)) return;
+  const [,e]=await api('DELETE',`/api/static/${mac}`);
+  if(e){toast('Fehler: '+e,'error');return;}
+  toast(`${hostname||mac} aus statischen Einträgen entfernt`,'info');
+  setTimeout(loadAll,500);
+}
+
+async function delLeaseDevice(mac,hostname){
+  if(!confirm(`Aktiven Lease für ${hostname||mac} löschen?`)) return;
+  const [,e]=await api('DELETE',`/api/lease/${mac}`);
+  if(e){toast('Fehler: '+e,'error');return;}
+  toast(`Lease für ${hostname||mac} gelöscht`,'info');
+  setTimeout(loadAll,1000);
+}
+
+// ── Leases ─────────────────────────────────────────────────────
 async function loadLeases(){
   document.getElementById('ltb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
   const [d,e]=await api('GET','/api/leases');
-  if(e){toast('Leases: '+e,'error');document.getElementById('ltb').innerHTML='<tr><td colspan="5" class="empty">Fehler: '+e+'</td></tr>';return;}
+  if(e){toast('Leases: '+e,'error');return;}
   leases=d||[];
   document.getElementById('kl').textContent=leases.length;
   renderLeases();
@@ -351,7 +471,11 @@ function renderLeases(){
     <td class="mono">${l.ip}</td>
     <td class="mono" style="color:var(--mut)">${l.mac}</td>
     <td style="color:var(--mut)">${fmtExp(l.expires)}</td>
-    <td><button class="btn btns bsm" onclick="promote('${l.mac}','${l.ip}','${hn}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button></td>
+    <td><div class="act-btns">
+      <button class="btn btns bsm" onclick="promoteDevice('${l.mac}','${l.ip}','${hn}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button>
+      <button class="btn btnw bsm" onclick="renewDevice('${l.mac}','${hn}')" title="Lease verlängern"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button>
+      <button class="btn btnd bsm" onclick="delLeaseDevice('${l.mac}','${hn}')" title="Lease löschen"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>
+    </div></td>
   </tr>`;
   }).join('');
   lucide.createIcons();
@@ -369,6 +493,7 @@ function renderRecent(){
   </tr>`).join('')||'<tr><td colspan="5" class="empty">Keine Leases</td></tr>';
 }
 
+// ── Static ─────────────────────────────────────────────────────
 async function loadStatic(){
   document.getElementById('stb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
   const [d,e]=await api('GET','/api/static');
@@ -387,7 +512,7 @@ function renderStatic(){
     <td class="mono">${e.ip}</td>
     <td class="mono" style="color:var(--mut)">${e.mac}</td>
     <td style="color:var(--mut)">${e.comment||'—'}</td>
-    <td><button class="btn btnd bsm" onclick="delStatic('${e.mac}')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button></td>
+    <td><button class="btn btnd bsm" onclick="delStaticDevice('${e.mac}','${e.hostname}')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button></td>
   </tr>`).join('');
   lucide.createIcons();
 }
@@ -403,28 +528,15 @@ async function addStatic(){
   closeModal();
   ['nm','ni','nh'].forEach(id=>document.getElementById(id).value='');
   loadStatic();
+  if(document.getElementById('view-all').classList.contains('active')) loadAll();
 }
 
-async function delStatic(mac){
-  if(!confirm(`Eintrag ${mac} löschen?`))return;
-  const [,e]=await api('DELETE',`/api/static/${mac}`);
-  if(e){toast('Fehler: '+e,'error');return;}
-  toast('Gelöscht','info');
-  loadStatic();
-}
-
-function promote(mac,ip,hostname){
-  document.getElementById('nm').value=mac;
-  document.getElementById('ni').value=ip;
-  document.getElementById('nh').value=hostname;
-  openModal();
-}
-
+// ── Config ────────────────────────────────────────────────────
 async function loadConfig(){
   const [d,e]=await api('GET','/api/config');
   if(e){toast('Config: '+e,'error');return;}
   cfg=d||{};
-  const show={...cfg};delete show._raw;
+  const show={...cfg};
   document.getElementById('cdisplay').innerHTML=Object.entries(show).map(([k,v])=>`
     <div style="display:flex;flex-direction:column;gap:.25rem">
       <div style="font-size:.8125rem;color:var(--mut);font-weight:500">${k}</div>
@@ -455,6 +567,7 @@ async function saveConfig(){
   loadConfig();
 }
 
+// ── Log ────────────────────────────────────────────────────────
 async function loadLog(filter='all'){
   curLogFilter=filter;
   document.getElementById('logpre').textContent='Lade…';
@@ -474,6 +587,7 @@ async function loadLog(filter='all'){
     :'[Keine Einträge gefunden]';
 }
 
+// ── Helpers ────────────────────────────────────────────────────
 function fmtExp(ts){
   if(!ts||ts==='0') return '—';
   const n=Number(ts);
@@ -493,10 +607,11 @@ document.querySelectorAll('.nitem').forEach(item=>{
     document.querySelectorAll('.view').forEach(vv=>vv.classList.remove('active'));
     item.classList.add('active');
     document.getElementById('view-'+v)?.classList.add('active');
+    if(v==='all')    loadAll();
     if(v==='leases') loadLeases();
     if(v==='static') loadStatic();
     if(v==='config') loadConfig();
-    if(v==='log') loadLog();
+    if(v==='log')    loadLog();
   });
 });
 

@@ -24,14 +24,12 @@ def get_sid():
             r = requests.post(
                 f"{PIHOLE_URL}/api/auth",
                 json={"password": PIHOLE_PASSWORD},
-                timeout=10,
-                verify=False,
+                timeout=10, verify=False,
             )
             r.raise_for_status()
             data = r.json()
             _sid         = data["session"]["sid"]
-            validity     = data["session"].get("validity", 1800)
-            _sid_expires = time.time() + validity
+            _sid_expires = time.time() + data["session"].get("validity", 1800)
             app.logger.info("PiHole session renewed")
             return _sid
         except Exception as e:
@@ -48,8 +46,7 @@ def ph(method, path, **kwargs):
             r = getattr(requests, method)(
                 f"{PIHOLE_URL}/api{path}",
                 headers={"X-FTL-SID": sid},
-                timeout=10,
-                verify=False,
+                timeout=10, verify=False,
                 **kwargs,
             )
             if r.status_code == 401 and attempt == 0:
@@ -57,16 +54,13 @@ def ph(method, path, **kwargs):
                 _sid = None
                 continue
             r.raise_for_status()
-            if r.content:
-                return r.json(), None
-            return {}, None
+            return (r.json() if r.content else {}), None
         except RequestException as e:
             return None, str(e)
     return None, "Auth failed after retry"
 
 
 def parse_hosts(hosts):
-    """Parst PiHole dhcp.hosts Eintraege: 'MAC,IP,Hostname' oder 'MAC,IP'"""
     result = []
     for h in hosts:
         parts = h.split(",")
@@ -80,7 +74,7 @@ def parse_hosts(hosts):
     return result
 
 
-# ── Routes ─────────────────────────────────────────────────────────────────────
+# ── Routes ──────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -110,6 +104,53 @@ def get_leases():
     } for l in leases])
 
 
+@app.route("/api/all_devices")
+def all_devices():
+    """Kombinierte Liste: aktive Leases + statische Eintraege."""
+    leases_data, err1 = ph("get", "/dhcp/leases")
+    static_data, err2 = ph("get", "/config/dhcp")
+
+    leases  = leases_data.get("leases", []) if leases_data else []
+    hosts   = static_data.get("config", {}).get("dhcp", {}).get("hosts", []) if static_data else []
+    statics = parse_hosts(hosts)
+
+    # Index statische Eintraege nach MAC
+    static_macs = {s["mac"].lower(): s for s in statics}
+
+    devices = []
+    seen_macs = set()
+
+    for l in leases:
+        mac = l.get("hwaddr", l.get("mac", ""))
+        mac_l = mac.lower()
+        seen_macs.add(mac_l)
+        st = static_macs.get(mac_l)
+        devices.append({
+            "mac":      mac,
+            "ip":       l.get("ip", l.get("address", "")),
+            "hostname": l.get("name", l.get("hostname", "")),
+            "expires":  l.get("expires", ""),
+            "is_static": st is not None,
+            "static_ip": st["ip"] if st else "",
+            "type":     "static+active" if st else "dynamic",
+        })
+
+    # Statische die gerade nicht aktiv sind
+    for s in statics:
+        if s["mac"].lower() not in seen_macs:
+            devices.append({
+                "mac":       s["mac"],
+                "ip":        s["ip"],
+                "hostname":  s["hostname"],
+                "expires":   "",
+                "is_static": True,
+                "static_ip": s["ip"],
+                "type":      "static",
+            })
+
+    return jsonify(devices)
+
+
 @app.route("/api/static", methods=["GET"])
 def get_static():
     data, err = ph("get", "/config/dhcp")
@@ -124,14 +165,13 @@ def add_static():
     d = request.json
     if not d.get("mac") or not d.get("ip"):
         return jsonify({"error": "mac and ip required"}), 400
-    # Bestehende hosts laden
     data, err = ph("get", "/config/dhcp")
     if err:
         return jsonify({"error": err}), 502
     hosts = data.get("config", {}).get("dhcp", {}).get("hosts", [])
-    # Neuen Eintrag hinzufuegen
-    new_entry = f"{d['mac']},{d['ip']},{d.get('hostname', '')}"
-    hosts.append(new_entry)
+    # Evtl. bestehenden Eintrag fuer diese MAC ersetzen
+    hosts = [h for h in hosts if not h.lower().startswith(d["mac"].lower())]
+    hosts.append(f"{d['mac']},{d['ip']},{d.get('hostname', '')}")
     _, err = ph("patch", "/config/dhcp", json={"config": {"dhcp": {"hosts": hosts}}})
     if err:
         return jsonify({"error": err}), 502
@@ -146,6 +186,29 @@ def del_static(mac):
     hosts = data.get("config", {}).get("dhcp", {}).get("hosts", [])
     hosts = [h for h in hosts if not h.lower().startswith(mac.lower())]
     _, err = ph("patch", "/config/dhcp", json={"config": {"dhcp": {"hosts": hosts}}})
+    if err:
+        return jsonify({"error": err}), 502
+    return jsonify({"ok": True})
+
+
+@app.route("/api/lease/renew", methods=["POST"])
+def renew_lease():
+    """Lease verlaengern: Eintrag aus Leases loeschen und neu einloesen lassen."""
+    d = request.json
+    mac = d.get("mac", "")
+    if not mac:
+        return jsonify({"error": "mac required"}), 400
+    # PiHole v6: DELETE /dhcp/leases/{mac} loescht den Lease -> Geraet holt sich neuen
+    _, err = ph("delete", f"/dhcp/leases/{mac}")
+    if err:
+        return jsonify({"error": err}), 502
+    return jsonify({"ok": True, "msg": "Lease geloescht – Geraet erhaelt bei naechster Anfrage neuen Lease"})
+
+
+@app.route("/api/lease/<mac>", methods=["DELETE"])
+def del_lease(mac):
+    """Aktiven Lease loeschen."""
+    _, err = ph("delete", f"/dhcp/leases/{mac}")
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
