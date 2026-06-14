@@ -2,17 +2,19 @@
 
 # 🌐 hAI.PeeDHCP
 
+[![Banner](docs/banner.png)](https://jbkunama1.github.io/hAI.PeeDHCP)
+
 **DHCP Admin Dashboard für PiHole v6 – als Portainer Stack**
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](docker-compose.yml)
 [![Python](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](backend/app.py)
 [![PiHole](https://img.shields.io/badge/PiHole-v6-96060C?style=for-the-badge&logo=pi-hole&logoColor=white)](https://pi-hole.net)
-[![TruffleHog](https://img.shields.io/badge/TruffleHog-Scanning-FF6B35?style=for-the-badge&logo=github-actions&logoColor=white)](.github/workflows/trufflehog.yml)
+[![TruffleHog](https://img.shields.io/badge/TruffleHog-Scanning-FF6B35?style=for-the-badge)](.github/workflows/trufflehog.yml)
 [![GitHub last commit](https://img.shields.io/github/last-commit/jbkunama1/hAI.PeeDHCP?style=for-the-badge)](https://github.com/jbkunama1/hAI.PeeDHCP/commits)
 
-> Eine schlanke, containerisierte Admin-Oberfläche zum Verwalten der PiHole-DHCP-Konfiguration – über die **PiHole v6 REST-API**.
-> PiHole bleibt dabei vollständig primär und funktionsfähig. Keine Dateizugriffe, keine Volumes.
+> Eine schlanke, containerisierte Admin-Oberfläche zum Verwalten der PiHole-DHCP-Konfiguration
+> über die **PiHole v6 REST-API**. Keine Volumes, keine Dateizugriffe.
 
 **[🌐 Projektseite](https://jbkunama1.github.io/hAI.PeeDHCP)**
 
@@ -84,7 +86,7 @@ cd hAI.PeeDHCP
 
 ```bash
 cp .env.example .env
-joe .env   # oder nano/vim
+joe .env
 ```
 
 Nur zwei Werte müssen gesetzt werden:
@@ -136,14 +138,15 @@ Environment-Variablen direkt in Portainer als Stack-Env setzen.
 hAI.PeeDHCP/
 ├── .github/
 │   └── workflows/
-│       └── trufflehog.yml       # Secret Scanning
+│       └── trufflehog.yml
 ├── backend/
 │   ├── app.py                   # Flask API + PiHole Session-Manager
 │   └── requirements.txt
 ├── docs/
-│   └── index.html               # GitHub Pages Projektseite
+│   ├── index.html               # GitHub Pages Projektseite
+│   └── banner.png               # README Banner (800×200)
 ├── frontend/
-│   └── index.html               # Admin UI
+│   └── index.html               # Admin UI (echte API-Calls)
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
@@ -158,9 +161,8 @@ hAI.PeeDHCP/
 
 > ⚠️ **Nie direkt ins Internet exponieren** – nur im LAN oder via VPN.
 
-- `PIHOLE_PASSWORD` als Portainer-Secret oder in `.env` (nie committen)
+- `PIHOLE_PASSWORD` in `.env` (nie committen – in `.gitignore`)
 - Zugriff per Traefik + BasicAuth oder Cloudflare Access absichern
-- `.env` ist in `.gitignore` eingetragen
 
 ---
 
