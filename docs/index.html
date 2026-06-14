@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>hAI.PeeDHCP – DHCP Admin Dashboard für PiHole v6</title>
+<meta name="description" content="Schlankes DHCP Admin Dashboard für PiHole v6 – Portainer Stack, keine Volumes, nur REST-API.">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:#0e0d0c;color:#cdccca;line-height:1.7;}
+a{color:#4f98a3;text-decoration:none}a:hover{text-decoration:underline}
+.mono{font-family:'JetBrains Mono',monospace}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid #262523;position:sticky;top:0;background:#0e0d0cee;backdrop-filter:blur(8px);z-index:100}
+.nav-logo{display:flex;align-items:center;gap:.5rem;font-weight:700;color:#cdccca;font-size:1.1rem}
+.nav-logo span{color:#4f98a3}
+.nav-links{display:flex;gap:1.5rem;font-size:.9rem;color:#797876}
+
+/* HERO */
+.hero{text-align:center;padding:5rem 1.5rem 3rem;max-width:760px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:#1c2b2c;color:#4f98a3;border:1px solid #2a4344;border-radius:9999px;padding:.25rem .85rem;font-size:.8rem;font-weight:500;margin-bottom:1.5rem}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:700;letter-spacing:-.03em;line-height:1.15;margin-bottom:1rem}
+.hero h1 span{color:#4f98a3}
+.hero p{font-size:1.05rem;color:#797876;max-width:600px;margin:0 auto 2rem}
+.btn-row{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.btn{padding:.65rem 1.5rem;border-radius:.5rem;font-weight:500;font-size:.95rem;cursor:pointer;display:inline-flex;align-items:center;gap:.4rem}
+.btn-primary{background:#4f98a3;color:#fff}.btn-primary:hover{background:#227f8b;text-decoration:none}
+.btn-outline{border:1px solid #393836;color:#cdccca}.btn-outline:hover{background:#1c1b19;text-decoration:none}
+
+/* BADGES */
+.badges{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin:2.5rem 0 1rem}
+.badges img{height:28px}
+
+/* FEATURES */
+.section{padding:4rem 1.5rem;max-width:1000px;margin:0 auto}
+.section-title{font-size:1.5rem;font-weight:600;letter-spacing:-.02em;margin-bottom:.5rem}
+.section-sub{color:#797876;margin-bottom:2.5rem;font-size:.95rem}
+.features{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.feat{background:#1c1b19;border:1px solid #262523;border-radius:.75rem;padding:1.25rem}
+.feat-icon{font-size:1.5rem;margin-bottom:.5rem}
+.feat-title{font-weight:600;margin-bottom:.25rem}
+.feat-desc{font-size:.875rem;color:#797876;line-height:1.6}
+
+/* INSTALL */
+.steps{display:flex;flex-direction:column;gap:1.25rem}
+.step{display:flex;gap:1rem;align-items:flex-start}
+.step-num{background:#1c2b2c;color:#4f98a3;border:1px solid #2a4344;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;font-size:.9rem}
+.step-body{flex:1}
+.step-title{font-weight:600;margin-bottom:.35rem}
+pre{background:#141312;border:1px solid #262523;border-radius:.5rem;padding:1rem 1.25rem;overflow-x:auto;font-size:.82rem;line-height:1.8;margin:.5rem 0}
+code{color:#4f98a3}
+
+/* DIVIDER */
+.divider{border:none;border-top:1px solid #1e1d1b;margin:0}
+
+/* FOOTER */
+footer{text-align:center;padding:2.5rem 1.5rem;color:#5a5957;font-size:.85rem;border-top:1px solid #1e1d1b}
+footer a{color:#5a5957}
+footer a:hover{color:#4f98a3}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4f98a3" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="7" cy="10" r="1.5" fill="#4f98a3" stroke="none"/><circle cx="12" cy="10" r="1.5" fill="#4f98a3" stroke="none"/><circle cx="17" cy="10" r="1.5" fill="#4f98a3" stroke="none"/></svg>
+    <span>hAI.<span>PeeDHCP</span></span>
+  </div>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#install">Installation</a>
+    <a href="https://github.com/jbkunama1/hAI.PeeDHCP">GitHub</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    PiHole v6 – REST API
+  </div>
+  <h1>DHCP Admin<br><span>Dashboard</span> für PiHole</h1>
+  <p>Schlankes, containerisiertes Admin-Interface für PiHole v6 – keine Volumes, keine Dateizugriffe, nur die offizielle REST-API.</p>
+  <div class="btn-row">
+    <a class="btn btn-primary" href="https://github.com/jbkunama1/hAI.PeeDHCP">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.37.6.1.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 3-.4c1.02 0 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.65 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.69.83.57C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      GitHub – Repository
+    </a>
+    <a class="btn btn-outline" href="#install">Schnellstart ↓</a>
+  </div>
+  <div class="badges">
+    <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="MIT">
+    <img src="https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white" alt="Docker">
+    <img src="https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white" alt="Python">
+    <img src="https://img.shields.io/badge/PiHole-v6-96060C?logo=pi-hole&logoColor=white" alt="PiHole">
+    <img src="https://img.shields.io/github/last-commit/jbkunama1/hAI.PeeDHCP" alt="Last Commit">
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="section" id="features">
+  <h2 class="section-title">Features</h2>
+  <p class="section-sub">Alles was du für den DHCP-Alltag brauchst – direkt im Browser.</p>
+  <div class="features">
+    <div class="feat"><div class="feat-icon">📊</div><div class="feat-title">Dashboard</div><div class="feat-desc">KPI-Cards mit aktiven Leases, statischen Einträgen, Pool-Größe und Leasetime – auf einen Blick.</div></div>
+    <div class="feat"><div class="feat-icon">📋</div><div class="feat-title">Aktive Leases</div><div class="feat-desc">Echtzeit-Tabelle aller DHCP-Leases aus der PiHole API mit Suchfilter und Schnell-Fix als statisch.</div></div>
+    <div class="feat"><div class="feat-icon">📌</div><div class="feat-title">Statische Einträge</div><div class="feat-desc">MAC → IP Bindungen hinzufügen und löschen – PiHole wird automatisch neu geladen.</div></div>
+    <div class="feat"><div class="feat-icon">⚙️</div><div class="feat-title">Konfiguration</div><div class="feat-desc">DHCP-Pool, Gateway, DNS-Server und Leasetime direkt über die Web-UI bearbeiten.</div></div>
+    <div class="feat"><div class="feat-icon">🔄</div><div class="feat-title">Auto-Session</div><div class="feat-desc">Login per PiHole-Passwort. Session-Token wird gecacht und bei Ablauf automatisch erneuert.</div></div>
+    <div class="feat"><div class="feat-icon">🐳</div><div class="feat-title">Portainer-Ready</div><div class="feat-desc">Einzelner Stack, kein externes Netzwerk, keine Volumes nötig – einfach deployen.</div></div>
+    <div class="feat"><div class="feat-icon">🌙</div><div class="feat-title">Dark / Light Mode</div><div class="feat-desc">System-aware Theme, manuell umschaltbar. Sieht auf jedem Gerät gut aus.</div></div>
+    <div class="feat"><div class="feat-icon">🔒</div><div class="feat-title">Secret Scanning</div><div class="feat-desc">TruffleHog scannt automatisch bei jedem Push auf Secrets und blockiert den Merge bei Fund.</div></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<section class="section" id="install">
+  <h2 class="section-title">Schnellstart</h2>
+  <p class="section-sub">In 3 Schritten zum laufenden Dashboard.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-body">
+        <div class="step-title">Repository klonen</div>
+        <pre><code>git clone https://github.com/jbkunama1/hAI.PeeDHCP.git
+cd hAI.PeeDHCP</code></pre>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-body">
+        <div class="step-title">.env anlegen &amp; anpassen</div>
+        <pre><code>cp .env.example .env
+# Zwei Werte eintragen:
+PIHOLE_URL=http://192.168.178.1
+PIHOLE_PASSWORD=dein-pihole-passwort</code></pre>
+        <p style="font-size:.85rem;color:#5a5957;margin-top:.5rem">⚠️ Passwort wird nur zum Einloggen verwendet – nie ins Repo committen.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-body">
+        <div class="step-title">Starten &amp; aufrufen</div>
+        <pre><code>docker compose up -d --build
+# Dashboard unter:
+http://&lt;server-ip&gt;:8095</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<footer>
+  Made with ❤️ by <a href="https://github.com/jbkunama1">@jbkunama1</a>
+  &nbsp;&bull;&nbsp;
+  <a href="https://github.com/jbkunama1/hAI.PeeDHCP">GitHub</a>
+  &nbsp;&bull;&nbsp;
+  <a href="https://github.com/jbkunama1/hAI.PeeDHCP/blob/main/LICENSE">MIT License</a>
+  &nbsp;&bull;&nbsp;
+  Part of the <strong>hAI.</strong> project family
+</footer>
+
+</body>
+</html>

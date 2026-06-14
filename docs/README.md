@@ -1,8 +1,10 @@
 # docs
 
-Banner und Logo für hAI.PeeDHCP.
+GitHub Pages Projektseite für hAI.PeeDHCP.
 
-- `banner.png` – GitHub README Banner (800x200)
-- `logo.png` – Quadratisches Projekt-Logo
+- `index.html` – Projektseite (GitHub Pages)
+- `banner.png` – README Banner (800×200, optional)
+- `logo.png` – Projekt-Logo (optional)
 
-Bilder bitte manuell hochladen (PNG, generiert via hAI-Bildgenerator).
+GitHub Pages aktivieren unter:
+Repository → Settings → Pages → Source: **Deploy from branch** → Branch: `main` → Folder: `/docs`
