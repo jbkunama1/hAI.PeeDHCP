@@ -1,119 +1,114 @@
 from flask import Flask, jsonify, request, send_from_directory
-import os, logging, requests
+import os, logging, requests, threading, time
 from requests.exceptions import RequestException
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 app = Flask(__name__)
 logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO"))
 
-PIHOLE_URL = os.getenv("PIHOLE_URL", "http://pihole").rstrip("/")
-PIHOLE_API_KEY = os.getenv("PIHOLE_API_KEY", "")
+PIHOLE_URL      = os.getenv("PIHOLE_URL",      "http://192.168.178.1").rstrip("/")
+PIHOLE_PASSWORD = os.getenv("PIHOLE_PASSWORD", "")
+
+_session_lock = threading.Lock()
+_sid          = None
+_sid_expires  = 0
 
 
-def ph_get(path, params=None):
-    """GET gegen die PiHole v6 REST-API."""
-    headers = {"X-FTL-SID": PIHOLE_API_KEY} if PIHOLE_API_KEY else {}
-    try:
-        r = requests.get(
-            f"{PIHOLE_URL}/api{path}",
-            headers=headers,
-            params=params or {},
-            timeout=10,
-            verify=False,
-        )
-        r.raise_for_status()
-        return r.json(), None
-    except RequestException as e:
-        app.logger.error(f"PiHole API error {path}: {e}")
-        return None, str(e)
+def get_sid():
+    """Gibt einen gueltigen Session-Token zurueck, loggt sich bei Bedarf neu ein."""
+    global _sid, _sid_expires
+    with _session_lock:
+        if _sid and time.time() < _sid_expires - 30:
+            return _sid
+        try:
+            r = requests.post(
+                f"{PIHOLE_URL}/api/auth",
+                json={"password": PIHOLE_PASSWORD},
+                timeout=10,
+                verify=False,
+            )
+            r.raise_for_status()
+            data = r.json()
+            _sid         = data["session"]["sid"]
+            validity     = data["session"].get("validity", 1800)
+            _sid_expires = time.time() + validity
+            app.logger.info("PiHole session renewed")
+            return _sid
+        except Exception as e:
+            app.logger.error(f"PiHole login failed: {e}")
+            return None
 
 
-def ph_post(path, payload):
-    headers = {"X-FTL-SID": PIHOLE_API_KEY} if PIHOLE_API_KEY else {}
-    try:
-        r = requests.post(
-            f"{PIHOLE_URL}/api{path}",
-            headers=headers,
-            json=payload,
-            timeout=10,
-            verify=False,
-        )
-        r.raise_for_status()
-        return r.json(), None
-    except RequestException as e:
-        return None, str(e)
+def ph(method, path, **kwargs):
+    """HTTP-Request gegen PiHole v6 API mit automatischer Session."""
+    for attempt in range(2):
+        sid = get_sid()
+        if not sid:
+            return None, "PiHole login failed"
+        try:
+            r = getattr(requests, method)(
+                f"{PIHOLE_URL}/api{path}",
+                headers={"X-FTL-SID": sid},
+                timeout=10,
+                verify=False,
+                **kwargs,
+            )
+            if r.status_code == 401 and attempt == 0:
+                global _sid
+                _sid = None  # Session ungueltig -> neu einloggen
+                continue
+            r.raise_for_status()
+            if r.content:
+                return r.json(), None
+            return {}, None
+        except RequestException as e:
+            return None, str(e)
+    return None, "Auth failed after retry"
 
 
-def ph_delete(path):
-    headers = {"X-FTL-SID": PIHOLE_API_KEY} if PIHOLE_API_KEY else {}
-    try:
-        r = requests.delete(
-            f"{PIHOLE_URL}/api{path}",
-            headers=headers,
-            timeout=10,
-            verify=False,
-        )
-        r.raise_for_status()
-        return True, None
-    except RequestException as e:
-        return False, str(e)
-
-
-# ── Static frontend ────────────────────────────────────────────────────────────
+# ── Routes ──────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
     return send_from_directory("/app/frontend", "index.html")
 
 
-# ── Health ─────────────────────────────────────────────────────────────────────
-
 @app.route("/api/health")
 def health():
-    data, err = ph_get("/dns/info")
+    data, err = ph("get", "/stats/summary")
     if err:
         return jsonify({"status": "pihole_unreachable", "error": err}), 502
     return jsonify({"status": "ok", "pihole": PIHOLE_URL})
 
 
-# ── Leases ─────────────────────────────────────────────────────────────────────
-
 @app.route("/api/leases")
 def get_leases():
-    """Aktive DHCP-Leases aus /api/dhcp/leases"""
-    data, err = ph_get("/dhcp/leases")
+    data, err = ph("get", "/dhcp/leases")
     if err:
         return jsonify({"error": err}), 502
     leases = data.get("leases", data) if isinstance(data, dict) else data
-    result = []
-    for l in leases:
-        result.append({
-            "mac":      l.get("hwaddr", l.get("mac", "")),
-            "ip":       l.get("ip",     l.get("address", "")),
-            "hostname": l.get("name",   l.get("hostname", "")),
-            "expires":  l.get("expires", ""),
-            "type":     "dynamic",
-        })
-    return jsonify(result)
+    return jsonify([{
+        "mac":      l.get("hwaddr", l.get("mac", "")),
+        "ip":       l.get("ip",     l.get("address", "")),
+        "hostname": l.get("name",   l.get("hostname", "*")),
+        "expires":  l.get("expires", ""),
+        "type":     "dynamic",
+    } for l in leases])
 
-
-# ── Static DHCP entries ────────────────────────────────────────────────────────
 
 @app.route("/api/static", methods=["GET"])
 def get_static():
-    """Statische DHCP-Eintraege aus /api/dhcp/static"""
-    data, err = ph_get("/dhcp/static")
+    data, err = ph("get", "/dhcp/static")
     if err:
         return jsonify({"error": err}), 502
     entries = data.get("staticleases", data.get("static", data)) if isinstance(data, dict) else data
-    result = []
-    for e in entries:
-        result.append({
-            "mac":      e.get("hwaddr", e.get("mac", "")),
-            "ip":       e.get("ip",     e.get("address", "")),
-            "hostname": e.get("hostname", e.get("name", "")),
-            "comment":  e.get("comment", ""),
-        })
-    return jsonify(result)
+    return jsonify([{
+        "mac":      e.get("hwaddr", e.get("mac", "")),
+        "ip":       e.get("ip",     e.get("address", "")),
+        "hostname": e.get("hostname", e.get("name", "")),
+        "comment":  e.get("comment", ""),
+    } for e in entries])
 
 
 @app.route("/api/static", methods=["POST"])
@@ -121,12 +116,11 @@ def add_static():
     d = request.json
     if not d.get("mac") or not d.get("ip"):
         return jsonify({"error": "mac and ip required"}), 400
-    payload = {
+    data, err = ph("post", "/dhcp/static", json={
         "hwaddr":   d["mac"],
         "ip":       d["ip"],
         "hostname": d.get("hostname", ""),
-    }
-    data, err = ph_post("/dhcp/static", payload)
+    })
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
@@ -134,31 +128,28 @@ def add_static():
 
 @app.route("/api/static/<mac>", methods=["DELETE"])
 def del_static(mac):
-    ok, err = ph_delete(f"/dhcp/static/{mac}")
+    _, err = ph("delete", f"/dhcp/static/{mac}")
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
 
 
-# ── DHCP Config ────────────────────────────────────────────────────────────────
-
 @app.route("/api/config", methods=["GET"])
 def get_config():
-    """DHCP-Einstellungen aus /api/config"""
-    data, err = ph_get("/config")
+    data, err = ph("get", "/config")
     if err:
         return jsonify({"error": err}), 502
-    cfg = data.get("config", data) if isinstance(data, dict) else {}
+    cfg  = data.get("config", data) if isinstance(data, dict) else {}
     dhcp = cfg.get("dhcp", {})
     dns  = cfg.get("dns",  {})
+    ups  = dns.get("upstreams", [])
     return jsonify({
-        "DHCP_START":     dhcp.get("start",      ""),
-        "DHCP_END":       dhcp.get("end",        ""),
-        "DHCP_ROUTER":    dhcp.get("router",     ""),
-        "DHCP_LEASETIME": dhcp.get("leaseTime",  ""),
-        "PIHOLE_DNS_1":   dns.get("upstreams",   [""])[0] if dns.get("upstreams") else "",
-        "PIHOLE_DNS_2":   dns.get("upstreams",   ["",""])[1] if len(dns.get("upstreams", [])) > 1 else "",
-        "_raw": cfg,
+        "DHCP_START":     dhcp.get("start",     ""),
+        "DHCP_END":       dhcp.get("end",       ""),
+        "DHCP_ROUTER":    dhcp.get("router",    ""),
+        "DHCP_LEASETIME": dhcp.get("leaseTime", ""),
+        "PIHOLE_DNS_1":   ups[0] if len(ups) > 0 else "",
+        "PIHOLE_DNS_2":   ups[1] if len(ups) > 1 else "",
     })
 
 
@@ -166,27 +157,18 @@ def get_config():
 def save_config():
     d = request.json
     payload = {"config": {"dhcp": {}}}
-    mapping = {
-        "DHCP_START":     ("dhcp", "start"),
-        "DHCP_END":       ("dhcp", "end"),
-        "DHCP_ROUTER":    ("dhcp", "router"),
-        "DHCP_LEASETIME": ("dhcp", "leaseTime"),
-    }
-    for key, (section, field) in mapping.items():
+    for key, field in [("DHCP_START","start"),("DHCP_END","end"),("DHCP_ROUTER","router"),("DHCP_LEASETIME","leaseTime")]:
         if key in d:
-            payload["config"].setdefault(section, {})[field] = d[key]
-    data, err = ph_post("/config", payload)
+            payload["config"]["dhcp"][field] = d[key]
+    _, err = ph("patch", "/config", json=payload)
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
 
 
-# ── Log ────────────────────────────────────────────────────────────────────────
-
 @app.route("/api/log")
 def get_log():
-    """DHCP-Queries aus /api/queries"""
-    data, err = ph_get("/queries", params={"type": "DHCP", "limit": 200})
+    data, err = ph("get", "/queries", params={"type": "DHCP", "limit": 200})
     if err:
         return jsonify({"lines": [f"[Fehler: {err}]"]})
     queries = data.get("queries", []) if isinstance(data, dict) else []
