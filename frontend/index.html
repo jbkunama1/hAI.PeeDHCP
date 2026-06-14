@@ -62,7 +62,12 @@ table{border-collapse:collapse;width:100%}
 .ct{font-weight:600;font-size:.9375rem}
 .cb{padding:1.25rem}
 .tw{overflow-x:auto}
-th{padding:.5rem .75rem;text-align:left;font-weight:600;color:var(--mut);border-bottom:1px solid var(--div);font-size:.8125rem;text-transform:uppercase;letter-spacing:.05em}
+th{padding:.5rem .75rem;text-align:left;font-weight:600;color:var(--mut);border-bottom:1px solid var(--div);font-size:.8125rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--txt);background:var(--soff)}
+th.sort-asc,th.sort-desc{color:var(--pri)}
+th .sort-icon{display:inline-block;margin-left:.35rem;opacity:.4;font-style:normal;font-size:.75rem}
+th.sort-asc .sort-icon,th.sort-desc .sort-icon{opacity:1}
 td{padding:.5rem .75rem;border-bottom:1px solid var(--div);font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--soff)}
@@ -155,7 +160,18 @@ tr:hover td{background:var(--soff)}
           <div class="tbar"><div class="sw"><i data-lucide="search"></i><input class="si" id="lsearch" type="text" placeholder="Hostname oder IP…" oninput="filterLeases()"></div></div>
           <button class="btn btns bsm" onclick="loadLeases()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Neu laden</button>
         </div>
-        <div class="tw"><table><thead><tr><th>Hostname</th><th>IP-Adresse</th><th>MAC</th><th>Lease bis</th><th>Aktion</th></tr></thead><tbody id="ltb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody></table></div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th class="sortable" data-table="leases" data-col="hostname">Hostname<i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="leases" data-col="ip">IP-Adresse<i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="leases" data-col="mac">MAC<i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="leases" data-col="expires">Lease bis<i class="sort-icon">⇅</i></th>
+              <th>Aktion</th>
+            </tr></thead>
+            <tbody id="ltb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -170,7 +186,18 @@ tr:hover td{background:var(--soff)}
             <button class="btn btnp bsm" onclick="openModal()"><i data-lucide="plus" style="width:12px;height:12px"></i> Neuer Eintrag</button>
           </div>
         </div>
-        <div class="tw"><table><thead><tr><th>Hostname</th><th>IP-Adresse</th><th>MAC</th><th>Kommentar</th><th>Aktionen</th></tr></thead><tbody id="stb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody></table></div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th class="sortable" data-table="static" data-col="hostname">Hostname<i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="static" data-col="ip">IP-Adresse<i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="static" data-col="mac">MAC<i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="static" data-col="comment">Kommentar<i class="sort-icon">⇅</i></th>
+              <th>Aktionen</th>
+            </tr></thead>
+            <tbody id="stb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody>
+          </table>
+        </div>
       </div>
     </div>
 
@@ -229,8 +256,9 @@ tr:hover td{background:var(--soff)}
 
 <script>
 let leases=[], statics=[], cfg={}, curLogFilter='all';
+const sortState={leases:{col:null,dir:'asc'},static:{col:null,dir:'asc'}};
 
-async function api(method, path, body){
+async function api(method,path,body){
   try{
     const opts={method,headers:{'Content-Type':'application/json'}};
     if(body) opts.body=JSON.stringify(body);
@@ -253,6 +281,55 @@ async function checkHealth(){
   }
 }
 
+// ── Sort helpers ────────────────────────────────────────────────
+function ipN(ip){return ip?ip.split('.').reduce((a,b)=>a*256+parseInt(b),0):0;}
+
+function cmpVal(a,b,col){
+  const av=a[col]||'', bv=b[col]||'';
+  if(col==='ip') return ipN(av)-ipN(bv);
+  if(col==='expires'){
+    const an=Number(av),bn=Number(bv);
+    if(!isNaN(an)&&!isNaN(bn)) return an-bn;
+  }
+  return av.toString().localeCompare(bv.toString(),undefined,{numeric:true});
+}
+
+function sortData(arr,table){
+  const {col,dir}=sortState[table];
+  if(!col) return [...arr];
+  return [...arr].sort((a,b)=>dir==='asc'?cmpVal(a,b,col):cmpVal(b,a,col));
+}
+
+function updateSortHeaders(table){
+  const {col,dir}=sortState[table];
+  document.querySelectorAll(`th[data-table="${table}"]`).forEach(th=>{
+    th.classList.remove('sort-asc','sort-desc');
+    const ic=th.querySelector('.sort-icon');
+    if(th.dataset.col===col){
+      th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
+      if(ic) ic.textContent=dir==='asc'?'↑':'↓';
+    } else {
+      if(ic) ic.textContent='⇅';
+    }
+  });
+}
+
+function handleSortClick(th){
+  const table=th.dataset.table,col=th.dataset.col;
+  if(sortState[table].col===col){
+    sortState[table].dir=sortState[table].dir==='asc'?'desc':'asc';
+  } else {
+    sortState[table].col=col;
+    sortState[table].dir='asc';
+  }
+  updateSortHeaders(table);
+  if(table==='leases') renderLeases();
+  if(table==='static') renderStatic();
+}
+
+document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>handleSortClick(th)));
+
+// ── Leases ─────────────────────────────────────────────────────
 async function loadLeases(){
   document.getElementById('ltb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
   const [d,e]=await api('GET','/api/leases');
@@ -265,21 +342,21 @@ async function loadLeases(){
 
 function renderLeases(){
   const tb=document.getElementById('ltb');
-  if(!leases.length){tb.innerHTML='<tr><td colspan="5" class="empty">Keine aktiven Leases</td></tr>';return;}
-  tb.innerHTML=leases.map(l=>`<tr>
+  const data=sortData(leases,'leases');
+  const q=(document.getElementById('lsearch')?.value||'').toLowerCase();
+  const filtered=q?data.filter(l=>(l.hostname+l.ip+l.mac).toLowerCase().includes(q)):data;
+  if(!filtered.length){tb.innerHTML='<tr><td colspan="5" class="empty">Keine Einträge</td></tr>';return;}
+  tb.innerHTML=filtered.map(l=>`<tr>
     <td>${l.hostname||'<span style="color:var(--fnt)">*</span>'}</td>
     <td class="mono">${l.ip}</td>
     <td class="mono" style="color:var(--mut)">${l.mac}</td>
     <td style="color:var(--mut)">${fmtExp(l.expires)}</td>
-    <td><button class="btn btns bsm" onclick="promote('${l.mac}','${l.ip}','${l.hostname||''}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button></td>
+    <td><button class="btn btns bsm" onclick="promote('${l.mac}','${l.ip}','${l.hostname||'}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button></td>
   </tr>`).join('');
   lucide.createIcons();
 }
 
-function filterLeases(){
-  const q=document.getElementById('lsearch').value.toLowerCase();
-  document.querySelectorAll('#ltb tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?'':'none');
-}
+function filterLeases(){renderLeases();}
 
 function renderRecent(){
   document.getElementById('rtb').innerHTML=leases.slice(0,8).map(l=>`<tr>
@@ -291,6 +368,7 @@ function renderRecent(){
   </tr>`).join('')||'<tr><td colspan="5" class="empty">Keine Leases</td></tr>';
 }
 
+// ── Static ─────────────────────────────────────────────────────
 async function loadStatic(){
   document.getElementById('stb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
   const [d,e]=await api('GET','/api/static');
@@ -302,8 +380,9 @@ async function loadStatic(){
 
 function renderStatic(){
   const tb=document.getElementById('stb');
-  if(!statics.length){tb.innerHTML='<tr><td colspan="5" class="empty">Keine statischen Einträge</td></tr>';return;}
-  tb.innerHTML=statics.map(e=>`<tr>
+  const data=sortData(statics,'static');
+  if(!data.length){tb.innerHTML='<tr><td colspan="5" class="empty">Keine statischen Einträge</td></tr>';return;}
+  tb.innerHTML=data.map(e=>`<tr>
     <td>${e.hostname||'—'}</td>
     <td class="mono">${e.ip}</td>
     <td class="mono" style="color:var(--mut)">${e.mac}</td>
@@ -341,6 +420,7 @@ function promote(mac,ip,hostname){
   openModal();
 }
 
+// ── Config ────────────────────────────────────────────────────
 async function loadConfig(){
   const [d,e]=await api('GET','/api/config');
   if(e){toast('Config: '+e,'error');return;}
@@ -376,6 +456,7 @@ async function saveConfig(){
   loadConfig();
 }
 
+// ── Log ────────────────────────────────────────────────────────
 async function loadLog(filter='all'){
   curLogFilter=filter;
   document.getElementById('logpre').textContent='Lade…';
@@ -395,12 +476,12 @@ async function loadLog(filter='all'){
     :'[Keine Einträge gefunden]';
 }
 
+// ── Helpers ────────────────────────────────────────────────────
 function fmtExp(ts){
-  if(!ts||ts==='0')return '—';
+  if(!ts||ts==='0') return '—';
   const n=Number(ts);
   return (!isNaN(n)&&n>1e9)?new Date(n*1000).toLocaleString('de-DE'):ts;
 }
-function ipN(ip){return ip?ip.split('.').reduce((a,b)=>a*256+parseInt(b),0):0;}
 function toast(msg,type='info'){
   const c=document.getElementById('tc'),t=document.createElement('div');
   t.className=`toast t${type[0]}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3500);
@@ -415,10 +496,10 @@ document.querySelectorAll('.nitem').forEach(item=>{
     document.querySelectorAll('.view').forEach(vv=>vv.classList.remove('active'));
     item.classList.add('active');
     document.getElementById('view-'+v)?.classList.add('active');
-    if(v==='leases')loadLeases();
-    if(v==='static')loadStatic();
-    if(v==='config')loadConfig();
-    if(v==='log')loadLog();
+    if(v==='leases') loadLeases();
+    if(v==='static') loadStatic();
+    if(v==='config') loadConfig();
+    if(v==='log') loadLog();
   });
 });
 
