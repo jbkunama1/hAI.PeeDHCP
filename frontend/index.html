@@ -177,7 +177,7 @@ tr:hover td{background:var(--soff)}
 
     <!-- STATIC -->
     <div class="view" id="view-static">
-      <div class="ph"><h1 class="pt">Statische Zuweisungen</h1><p class="pd">Quelle: PiHole v6 /api/dhcp/static</p></div>
+      <div class="ph"><h1 class="pt">Statische Zuweisungen</h1><p class="pd">Quelle: PiHole v6 /api/dhcp/static_leases</p></div>
       <div class="ib ibo"><div class="ibtitle">⚠️ Hinweis</div><div class="ibtxt">Änderungen werden direkt via PiHole API gespeichert.</div></div>
       <div class="card">
         <div class="ch"><span class="ct">Statische Einträge</span>
@@ -281,7 +281,6 @@ async function checkHealth(){
   }
 }
 
-// ── Sort helpers ────────────────────────────────────────────────
 function ipN(ip){return ip?ip.split('.').reduce((a,b)=>a*256+parseInt(b),0):0;}
 
 function cmpVal(a,b,col){
@@ -329,7 +328,6 @@ function handleSortClick(th){
 
 document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>handleSortClick(th)));
 
-// ── Leases ─────────────────────────────────────────────────────
 async function loadLeases(){
   document.getElementById('ltb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
   const [d,e]=await api('GET','/api/leases');
@@ -346,13 +344,16 @@ function renderLeases(){
   const q=(document.getElementById('lsearch')?.value||'').toLowerCase();
   const filtered=q?data.filter(l=>(l.hostname+l.ip+l.mac).toLowerCase().includes(q)):data;
   if(!filtered.length){tb.innerHTML='<tr><td colspan="5" class="empty">Keine Einträge</td></tr>';return;}
-  tb.innerHTML=filtered.map(l=>`<tr>
-    <td>${l.hostname||'<span style="color:var(--fnt)">*</span>'}</td>
+  tb.innerHTML=filtered.map(l=>{
+    const hn=l.hostname||'';
+    return `<tr>
+    <td>${hn||'<span style="color:var(--fnt)">*</span>'}</td>
     <td class="mono">${l.ip}</td>
     <td class="mono" style="color:var(--mut)">${l.mac}</td>
     <td style="color:var(--mut)">${fmtExp(l.expires)}</td>
-    <td><button class="btn btns bsm" onclick="promote('${l.mac}','${l.ip}','${l.hostname||'}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button></td>
-  </tr>`).join('');
+    <td><button class="btn btns bsm" onclick="promote('${l.mac}','${l.ip}','${hn}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button></td>
+  </tr>`;
+  }).join('');
   lucide.createIcons();
 }
 
@@ -368,7 +369,6 @@ function renderRecent(){
   </tr>`).join('')||'<tr><td colspan="5" class="empty">Keine Leases</td></tr>';
 }
 
-// ── Static ─────────────────────────────────────────────────────
 async function loadStatic(){
   document.getElementById('stb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
   const [d,e]=await api('GET','/api/static');
@@ -420,7 +420,6 @@ function promote(mac,ip,hostname){
   openModal();
 }
 
-// ── Config ────────────────────────────────────────────────────
 async function loadConfig(){
   const [d,e]=await api('GET','/api/config');
   if(e){toast('Config: '+e,'error');return;}
@@ -456,7 +455,6 @@ async function saveConfig(){
   loadConfig();
 }
 
-// ── Log ────────────────────────────────────────────────────────
 async function loadLog(filter='all'){
   curLogFilter=filter;
   document.getElementById('logpre').textContent='Lade…';
@@ -476,7 +474,6 @@ async function loadLog(filter='all'){
     :'[Keine Einträge gefunden]';
 }
 
-// ── Helpers ────────────────────────────────────────────────────
 function fmtExp(ts){
   if(!ts||ts==='0') return '—';
   const n=Number(ts);
