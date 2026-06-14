@@ -28,6 +28,7 @@
 |---|---|
 | 📊 **Dashboard** | KPI-Cards: aktive Leases, statische Einträge, Pool-Größe, Leasetime |
 | 📋 **Aktive Leases** | Echtzeit-Tabelle via PiHole API mit Suchfilter |
+| 🔃 **Sortierung** | Alle Tabellen-Spalten sortierbar (Hostname, IP numerisch, MAC, Lease-Zeit) |
 | 📌 **Statische Einträge** | MAC → IP Bindungen hinzufügen & löschen |
 | ⚙️ **Konfiguration** | DHCP-Pool, Gateway, DNS, Leasetime bearbeiten |
 | 📄 **DHCP-Log** | Live-Logansicht mit Farbfilter |
@@ -57,8 +58,8 @@ hAI.PeeDHCP nutzt die **PiHole v6 REST-API** mit automatischem Session-Managemen
 │  ┌──────────────┐        ┌───────────────────────┐  │
 │  │   PiHole v6  │  HTTP  │   hAI.PeeDHCP Stack   │  │
 │  │  :80/api/... │◄──────►│  Flask + Gunicorn     │  │
-│  │  (primär)    │ REST  │  :8080 → Host :8095  │  │
-│  └──────────────┘       └───────────────────────┘  │
+│  │  (primär)    │ REST   │  :8080 → Host :8095   │  │
+│  └──────────────┘        └───────────────────────┘  │
 └─────────────────────────────────────────────────────┘
          Browser → http://<server-ip>:8095
 ```
@@ -118,27 +119,26 @@ Environment-Variablen direkt in Portainer als Stack-Env setzen.
 
 ---
 
-## 🔄 UI-Updates (ohne Rebuild)
-
-Da das `frontend/`-Verzeichnis als Volume gemountet ist, reicht nach einem `git pull`:
+## 🔄 Updates einspielen
 
 ```bash
 git pull
-docker compose restart
+docker compose up -d --build
 ```
 
-Kein `--build`, kein `--no-cache` nötig. ✅
+> Da `app.py` im Image liegt, ist `--build` nach Backend-Änderungen erforderlich.
+> Reine UI-Änderungen (`frontend/index.html`) werden nach `docker compose restart` sofort aktiv.
 
 ---
 
 ## 🔧 API-Endpunkte
 
-| Method | Endpoint | PiHole API | Beschreibung |
+| Method | Endpoint | PiHole v6 API | Beschreibung |
 |---|---|---|---|
 | `GET` | `/api/leases` | `/api/dhcp/leases` | Aktive DHCP-Leases |
-| `GET` | `/api/static` | `/api/dhcp/static` | Statische Einträge |
-| `POST` | `/api/static` | `/api/dhcp/static` | Eintrag hinzufügen |
-| `DELETE` | `/api/static/<mac>` | `/api/dhcp/static/<mac>` | Eintrag löschen |
+| `GET` | `/api/static` | `/api/dhcp/static_leases` | Statische Einträge |
+| `POST` | `/api/static` | `/api/dhcp/static_leases` | Eintrag hinzufügen |
+| `DELETE` | `/api/static/<mac>` | `/api/dhcp/static_leases/<mac>` | Eintrag löschen |
 | `GET` | `/api/config` | `/api/config` | DHCP-Konfiguration |
 | `POST` | `/api/config` | `/api/config` (PATCH) | Konfiguration speichern |
 | `GET` | `/api/log` | `/api/queries` | DHCP-Log |
