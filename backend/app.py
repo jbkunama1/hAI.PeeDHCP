@@ -16,7 +16,6 @@ _sid_expires  = 0
 
 
 def get_sid():
-    """Gibt einen gueltigen Session-Token zurueck, loggt sich bei Bedarf neu ein."""
     global _sid, _sid_expires
     with _session_lock:
         if _sid and time.time() < _sid_expires - 30:
@@ -41,7 +40,6 @@ def get_sid():
 
 
 def ph(method, path, **kwargs):
-    """HTTP-Request gegen PiHole v6 API mit automatischer Session."""
     for attempt in range(2):
         sid = get_sid()
         if not sid:
@@ -56,7 +54,7 @@ def ph(method, path, **kwargs):
             )
             if r.status_code == 401 and attempt == 0:
                 global _sid
-                _sid = None  # Session ungueltig -> neu einloggen
+                _sid = None
                 continue
             r.raise_for_status()
             if r.content:
@@ -65,6 +63,21 @@ def ph(method, path, **kwargs):
         except RequestException as e:
             return None, str(e)
     return None, "Auth failed after retry"
+
+
+def parse_hosts(hosts):
+    """Parst PiHole dhcp.hosts Eintraege: 'MAC,IP,Hostname' oder 'MAC,IP'"""
+    result = []
+    for h in hosts:
+        parts = h.split(",")
+        if len(parts) >= 2:
+            result.append({
+                "mac":      parts[0].strip(),
+                "ip":       parts[1].strip(),
+                "hostname": parts[2].strip() if len(parts) > 2 else "",
+                "comment":  "",
+            })
+    return result
 
 
 # ── Routes ─────────────────────────────────────────────────────────────────────
@@ -97,19 +110,13 @@ def get_leases():
     } for l in leases])
 
 
-# PiHole v6 verwendet /api/dhcp/static_leases (nicht /dhcp/static)
 @app.route("/api/static", methods=["GET"])
 def get_static():
-    data, err = ph("get", "/dhcp/static_leases")
+    data, err = ph("get", "/config/dhcp")
     if err:
         return jsonify({"error": err}), 502
-    entries = data.get("static_leases", data.get("staticleases", data.get("static", data))) if isinstance(data, dict) else data
-    return jsonify([{
-        "mac":      e.get("hwaddr", e.get("mac", "")),
-        "ip":       e.get("ip",     e.get("address", "")),
-        "hostname": e.get("hostname", e.get("name", "")),
-        "comment":  e.get("comment", ""),
-    } for e in entries])
+    hosts = data.get("config", {}).get("dhcp", {}).get("hosts", [])
+    return jsonify(parse_hosts(hosts))
 
 
 @app.route("/api/static", methods=["POST"])
@@ -117,11 +124,15 @@ def add_static():
     d = request.json
     if not d.get("mac") or not d.get("ip"):
         return jsonify({"error": "mac and ip required"}), 400
-    data, err = ph("post", "/dhcp/static_leases", json={
-        "hwaddr":   d["mac"],
-        "ip":       d["ip"],
-        "hostname": d.get("hostname", ""),
-    })
+    # Bestehende hosts laden
+    data, err = ph("get", "/config/dhcp")
+    if err:
+        return jsonify({"error": err}), 502
+    hosts = data.get("config", {}).get("dhcp", {}).get("hosts", [])
+    # Neuen Eintrag hinzufuegen
+    new_entry = f"{d['mac']},{d['ip']},{d.get('hostname', '')}"
+    hosts.append(new_entry)
+    _, err = ph("patch", "/config/dhcp", json={"config": {"dhcp": {"hosts": hosts}}})
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
@@ -129,7 +140,12 @@ def add_static():
 
 @app.route("/api/static/<mac>", methods=["DELETE"])
 def del_static(mac):
-    _, err = ph("delete", f"/dhcp/static_leases/{mac}")
+    data, err = ph("get", "/config/dhcp")
+    if err:
+        return jsonify({"error": err}), 502
+    hosts = data.get("config", {}).get("dhcp", {}).get("hosts", [])
+    hosts = [h for h in hosts if not h.lower().startswith(mac.lower())]
+    _, err = ph("patch", "/config/dhcp", json={"config": {"dhcp": {"hosts": hosts}}})
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
@@ -137,12 +153,12 @@ def del_static(mac):
 
 @app.route("/api/config", methods=["GET"])
 def get_config():
-    data, err = ph("get", "/config")
+    data, err = ph("get", "/config/dhcp")
     if err:
         return jsonify({"error": err}), 502
-    cfg  = data.get("config", data) if isinstance(data, dict) else {}
-    dhcp = cfg.get("dhcp", {})
-    dns  = cfg.get("dns",  {})
+    dhcp = data.get("config", {}).get("dhcp", {})
+    dns_data, _ = ph("get", "/config/dns")
+    dns  = dns_data.get("config", {}).get("dns", {}) if dns_data else {}
     ups  = dns.get("upstreams", [])
     return jsonify({
         "DHCP_START":     dhcp.get("start",     ""),
@@ -161,7 +177,7 @@ def save_config():
     for key, field in [("DHCP_START","start"),("DHCP_END","end"),("DHCP_ROUTER","router"),("DHCP_LEASETIME","leaseTime")]:
         if key in d:
             payload["config"]["dhcp"][field] = d[key]
-    _, err = ph("patch", "/config", json=payload)
+    _, err = ph("patch", "/config/dhcp", json=payload)
     if err:
         return jsonify({"error": err}), 502
     return jsonify({"ok": True})
