@@ -1,0 +1,35 @@
+version: "3.8"
+
+# hAI.PeeDHCP – Portainer Stack
+
+services:
+  dhcp-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: dhcp-admin:latest
+    container_name: dhcp-admin
+    restart: unless-stopped
+    ports:
+      - "8095:8080"
+    env_file: .env
+    volumes:
+      - /etc/pihole:/data/pihole:rw
+      - /etc/dnsmasq.d:/data/dnsmasq:rw
+      - /var/lib/misc:/data/leases:ro
+      - /var/log/pihole.log:/data/pihole.log:ro
+    networks:
+      - pihole_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "traefik.enable=false"
+      # - "traefik.http.routers.dhcp-admin.rule=Host(`dhcp.intern.example.com`)"
+
+networks:
+  pihole_net:
+    external: true

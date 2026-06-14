@@ -1,0 +1,60 @@
+# === Python ===
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.venv/
+venv/
+env/
+ENV/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# === Environment & Secrets ===
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+
+# === Docker ===
+.dockerignore
+
+# === Editor ===
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.joe_history
+
+# === OS ===
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# === Logs ===
+*.log
+logs/
+*.pid
+
+# === Node (falls Frontend-Build) ===
+node_modules/
+dist/
+.npm
+
+# === Test & Coverage ===
+coverage.xml
+.tox/
