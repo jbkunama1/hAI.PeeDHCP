@@ -11,6 +11,9 @@ services:
     ports:
       - "8095:8080"
     env_file: .env
+    volumes:
+      # Frontend live vom Host – kein Rebuild bei UI-Änderungen nötig
+      - ./frontend:/app/frontend:ro
     networks:
       - default
     healthcheck:

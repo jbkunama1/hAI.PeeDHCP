@@ -14,7 +14,7 @@
 [![GitHub last commit](https://img.shields.io/github/last-commit/jbkunama1/hAI.PeeDHCP?style=for-the-badge)](https://github.com/jbkunama1/hAI.PeeDHCP/commits)
 
 > Eine schlanke, containerisierte Admin-Oberfläche zum Verwalten der PiHole-DHCP-Konfiguration
-> über die **PiHole v6 REST-API**. Keine Volumes, keine Dateizugriffe.
+> über die **PiHole v6 REST-API**. Keine Datei-Volumes, keine Root-Rechte.
 
 **[🌐 Projektseite](https://jbkunama1.github.io/hAI.PeeDHCP)**
 
@@ -33,7 +33,7 @@
 | 📄 **DHCP-Log** | Live-Logansicht mit Farbfilter |
 | 🔄 **Auto-Session** | Login per Passwort, Session-Token wird automatisch erneuert |
 | 🌙 **Dark/Light Mode** | System-aware Theme, manuell umschaltbar |
-| 🐳 **Portainer-Ready** | Einzelner Stack, keine externen Abhängigkeiten, keine Volumes |
+| 🐳 **Portainer-Ready** | Einzelner Stack, kein Rebuild bei UI-Änderungen |
 
 ---
 
@@ -63,7 +63,8 @@ hAI.PeeDHCP nutzt die **PiHole v6 REST-API** mit automatischem Session-Managemen
          Browser → http://<server-ip>:8095
 ```
 
-**Keine Volumes** – der Container braucht nur Netzwerkzugriff auf PiHole.
+> Das `frontend/`-Verzeichnis wird als **read-only Volume** in den Container gemountet.
+> UI-Änderungen sind nach einem einfachen `docker compose restart` sofort aktiv – **kein Rebuild nötig**.
 
 ---
 
@@ -117,6 +118,19 @@ Environment-Variablen direkt in Portainer als Stack-Env setzen.
 
 ---
 
+## 🔄 UI-Updates (ohne Rebuild)
+
+Da das `frontend/`-Verzeichnis als Volume gemountet ist, reicht nach einem `git pull`:
+
+```bash
+git pull
+docker compose restart
+```
+
+Kein `--build`, kein `--no-cache` nötig. ✅
+
+---
+
 ## 🔧 API-Endpunkte
 
 | Method | Endpoint | PiHole API | Beschreibung |
@@ -146,7 +160,7 @@ hAI.PeeDHCP/
 │   ├── index.html               # GitHub Pages Projektseite
 │   └── banner.png               # README Banner (800×200)
 ├── frontend/
-│   └── index.html               # Admin UI (echte API-Calls)
+│   └── index.html               # Admin UI – via Volume live gemountet
 ├── .env.example
 ├── .gitignore
 ├── docker-compose.yml
