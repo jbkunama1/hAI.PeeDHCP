@@ -1,5 +1,9 @@
 # hAI.PeeDHCP
 
+<a href="https://www.buymeacoffee.com/highfish">
+<img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174">
+</a>
+
 ![Logo](logo.png)
 
 > **DHCP-Admin-Oberfläche für PiHole v6** – Docker-basiert, keine externe Datenbank, direkte REST-API-Anbindung.
@@ -113,3 +117,4 @@ hAI.PeeDHCP/
 ## Lizenz
 
 MIT – siehe [LICENSE](LICENSE)
+
