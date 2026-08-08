@@ -1,4 +1,9 @@
 # hAI.PeeDHCP
+[![Status](https://img.shields.io/badge/status-active-brightgreen?style=for-the-badge)](https://github.com/jbkunama1/hAI.PeeDHCP)
+[![PiHole](https://img.shields.io/badge/PiHole-DHCP-red?style=for-the-badge&logo=pihole&logoColor=white)](https://github.com/jbkunama1/hAI.PeeDHCP)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://github.com/jbkunama1/hAI.PeeDHCP)
+[![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+
 
 
 
