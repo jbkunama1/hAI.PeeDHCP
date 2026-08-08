@@ -11,6 +11,10 @@ jobs:
   trufflehog:
     name: TruffleHog Scanning
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
 
     steps:
       - name: Checkout Repository
@@ -22,11 +26,7 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
-          extra_args: >-
-            --only-verified
-            --fail
+          extra_args: --results=verified,unknown
 
       - name: Scan-Zusammenfassung ausgeben
         if: always()
