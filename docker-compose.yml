@@ -14,6 +14,8 @@ services:
     volumes:
       # Frontend live vom Host – kein Rebuild bei UI-Änderungen nötig
       - ./frontend:/app/frontend:ro
+      # Einstellungen + Notizen (settings.json, meta.json) bleiben erhalten
+      - ./data:/app/data
     networks:
       - default
     healthcheck:

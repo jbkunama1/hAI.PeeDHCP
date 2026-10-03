@@ -2,7 +2,8 @@
 <html lang="de" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#171614">
 <title>hAI.PeeDHCP – DHCP Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -14,8 +15,6 @@
   --ok:#437a22;--okhl:#d4dfcc;--warn:#964219;--warnhl:#ddcfc6;
   --err:#a12c7b;--errhl:#e0ced7;--blu:#006494;--bluhl:#c6d8e4;
   --sh:0 1px 2px rgba(0,0,0,.06);--shm:0 4px 12px rgba(0,0,0,.08);--shl:0 12px 32px rgba(0,0,0,.12);
-  --r:.375rem;--rm:.5rem;--rl:.75rem;--rxl:1rem;--rf:9999px;
-  --fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
 }
 [data-theme="dark"]{
   --bg:#171614;--surface:#1c1b19;--s2:#201f1d;--soff:#1d1c1a;--sdyn:#2d2c2a;
@@ -25,10 +24,18 @@
   --err:#d163a7;--errhl:#4c3d46;--blu:#5591c7;--bluhl:#3a4550;
   --sh:0 1px 2px rgba(0,0,0,.2);--shm:0 4px 12px rgba(0,0,0,.3);--shl:0 12px 32px rgba(0,0,0,.4);
 }
+:root{
+  --r:.375rem;--rm:.5rem;--rl:.75rem;--rxl:1rem;--rf:9999px;
+  --fb:'Inter',sans-serif;--fm:'JetBrains Mono',monospace;
+  --pad-y:.5rem;--fs:1;
+}
+[data-radius="sm"]{--r:.2rem;--rm:.25rem;--rl:.35rem;--rxl:.5rem}
+[data-radius="lg"]{--r:.5rem;--rm:.75rem;--rl:1.1rem;--rxl:1.5rem}
+[data-density="compact"]{--pad-y:.2rem}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{-webkit-font-smoothing:antialiased}
-body{min-height:100dvh;font-family:var(--fb);font-size:.9375rem;color:var(--txt);background:var(--bg)}
-input,button,select{font:inherit;color:inherit}
+html{-webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%}
+body{min-height:100dvh;font-family:var(--fb);font-size:calc(.9375rem*var(--fs));color:var(--txt);background:var(--bg)}
+input,button,select,textarea{font:inherit;color:inherit}
 button{cursor:pointer;background:none;border:none}
 table{border-collapse:collapse;width:100%}
 :focus-visible{outline:2px solid var(--pri);outline-offset:3px;border-radius:var(--r)}
@@ -36,21 +43,21 @@ table{border-collapse:collapse;width:100%}
 .topbar{grid-column:1/-1;display:flex;align-items:center;gap:1rem;padding:.75rem 1.5rem;background:var(--surface);border-bottom:1px solid var(--bdr);position:sticky;top:0;z-index:100}
 .logo{display:flex;align-items:center;gap:.5rem;color:var(--pri);font-weight:600}
 .topbar-r{margin-left:auto;display:flex;align-items:center;gap:.75rem}
-.pill{display:flex;align-items:center;gap:.5rem;padding:.25rem .75rem;border-radius:var(--rf);background:var(--okhl);color:var(--ok);font-size:.8125rem;font-weight:500}
+.pill{display:flex;align-items:center;gap:.5rem;padding:.25rem .75rem;border-radius:var(--rf);background:var(--okhl);color:var(--ok);font-size:.8125rem;font-weight:500;white-space:nowrap}
 .dot{width:6px;height:6px;border-radius:50%;background:currentColor}
-.bico{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:var(--rm);color:var(--mut)}
+.bico{display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:var(--rm);color:var(--mut)}
 .bico:hover{background:var(--soff);color:var(--txt)}
 .sidebar{background:var(--surface);border-right:1px solid var(--bdr);padding:1rem 0;display:flex;flex-direction:column;gap:.25rem}
 .nlbl{font-size:.8125rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--fnt);padding:.75rem 1.25rem .25rem}
-.nitem{display:flex;align-items:center;gap:.75rem;padding:.5rem 1.25rem;color:var(--mut);font-size:.9375rem;cursor:pointer}
+.nitem{display:flex;align-items:center;gap:.75rem;padding:.5rem 1.25rem;color:var(--mut);cursor:pointer;text-decoration:none}
 .nitem:hover{background:var(--soff);color:var(--txt)}
 .nitem.active{background:var(--prihl);color:var(--pri);font-weight:500}
 .nitem svg{width:16px;height:16px;flex-shrink:0}
-.main{padding:1.5rem;overflow:auto}
+.main{padding:1.5rem;overflow:auto;min-width:0}
 .view{display:none}.view.active{display:block}
 .ph{margin-bottom:1.5rem}
 .pt{font-size:1.75rem;font-weight:600;letter-spacing:-.02em;line-height:1.2}
-.pd{margin-top:.25rem;color:var(--mut);font-size:.9375rem}
+.pd{margin-top:.25rem;color:var(--mut)}
 .kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem}
 .kcard{background:var(--surface);border:1px solid rgba(128,128,128,.12);border-radius:var(--rl);padding:1rem;box-shadow:var(--sh)}
 .klbl{font-size:.8125rem;color:var(--mut);font-weight:500;text-transform:uppercase;letter-spacing:.06em}
@@ -58,8 +65,8 @@ table{border-collapse:collapse;width:100%}
 .ksub{font-size:.8125rem;color:var(--mut);margin-top:.25rem}
 .kt{border-left:3px solid var(--pri)}.kg{border-left:3px solid var(--ok)}.ko{border-left:3px solid var(--warn)}.kb{border-left:3px solid var(--blu)}
 .card{background:var(--surface);border:1px solid rgba(128,128,128,.12);border-radius:var(--rl);box-shadow:var(--sh);overflow:hidden;margin-bottom:1rem}
-.ch{padding:1rem 1.25rem;border-bottom:1px solid var(--div);display:flex;align-items:center;justify-content:space-between;gap:.75rem}
-.ct{font-weight:600;font-size:.9375rem}
+.ch{padding:1rem 1.25rem;border-bottom:1px solid var(--div);display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.ct{font-weight:600}
 .cb{padding:1.25rem}
 .tw{overflow-x:auto}
 th{padding:.5rem .75rem;text-align:left;font-weight:600;color:var(--mut);border-bottom:1px solid var(--div);font-size:.8125rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
@@ -68,49 +75,109 @@ th.sortable:hover{color:var(--txt);background:var(--soff)}
 th.sort-asc,th.sort-desc{color:var(--pri)}
 th .sort-icon{display:inline-block;margin-left:.35rem;opacity:.4;font-style:normal;font-size:.75rem}
 th.sort-asc .sort-icon,th.sort-desc .sort-icon{opacity:1}
-td{padding:.5rem .75rem;border-bottom:1px solid var(--div);font-variant-numeric:tabular-nums}
+td{padding:var(--pad-y) .75rem;border-bottom:1px solid var(--div);font-variant-numeric:tabular-nums}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--soff)}
 .mono{font-family:var(--fm)}
-.badge{display:inline-flex;align-items:center;gap:.25rem;padding:2px .5rem;border-radius:var(--rf);font-size:.8125rem;font-weight:500}
+.muted{color:var(--mut)}
+.badge{display:inline-flex;align-items:center;gap:.25rem;padding:2px .5rem;border-radius:var(--rf);font-size:.8125rem;font-weight:500;white-space:nowrap}
 .bg{background:var(--okhl);color:var(--ok)}.bb{background:var(--bluhl);color:var(--blu)}.bo{background:var(--warnhl);color:var(--warn)}.bp{background:var(--prihl);color:var(--pri)}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--rm);font-size:.9375rem;font-weight:500;cursor:pointer;border:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.5rem 1rem;border-radius:var(--rm);font-weight:500;border:none;min-height:36px}
 .btnp{background:var(--pri);color:#fff}.btnp:hover{background:var(--prih)}
 .btns{background:var(--soff);color:var(--txt);border:1px solid rgba(128,128,128,.15)}.btns:hover{background:var(--sdyn)}
 .btnd{background:var(--errhl);color:var(--err)}
 .btnw{background:var(--warnhl);color:var(--warn)}
-.bsm{padding:.25rem .75rem;font-size:.8125rem}
+.bsm{padding:.25rem .75rem;font-size:.8125rem;min-height:32px}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
 .fg1{grid-column:1/-1}
-.fgrp{display:flex;flex-direction:column;gap:.25rem}
+.fgrp{display:flex;flex-direction:column;gap:.25rem;min-width:0}
 .flbl{font-size:.8125rem;font-weight:600;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
-.fi{padding:.5rem .75rem;border-radius:var(--rm);background:var(--s2);border:1px solid rgba(128,128,128,.2);color:var(--txt);font-size:.9375rem}
-.fi:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px rgba(79,152,163,.15)}
+.fhint{font-size:.75rem;color:var(--mut)}
+.fi{padding:.5rem .75rem;border-radius:var(--rm);background:var(--s2);border:1px solid rgba(128,128,128,.2);color:var(--txt);width:100%;min-height:38px}
+.fi:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px color-mix(in srgb,var(--pri) 20%,transparent)}
+input[type=color].fi{padding:.15rem;height:38px;cursor:pointer}
+input[type=range]{width:100%;accent-color:var(--pri)}
+.row{display:flex;gap:.5rem;align-items:center}
+.row>.fi{flex:1}
 .ib{border-radius:var(--rl);padding:1rem;border:1px solid rgba(128,128,128,.1);margin-bottom:1rem}
 .ibo{background:var(--warnhl);border-color:var(--warn)}
-.ibb{background:var(--bluhl);border-color:var(--blu)}
 .ibtxt{font-size:.8125rem;line-height:1.7}
-.ibtitle{font-weight:600;margin-bottom:.25rem;display:flex;align-items:center;gap:.5rem}
+.ibtitle{font-weight:600;margin-bottom:.25rem}
 .tcontainer{position:fixed;bottom:1.5rem;right:1.5rem;display:flex;flex-direction:column;gap:.5rem;z-index:999}
-.toast{padding:.75rem 1.25rem;border-radius:var(--rl);font-size:.9375rem;box-shadow:var(--shl);display:flex;align-items:center;gap:.5rem;animation:si .25s ease}
+.toast{padding:.75rem 1.25rem;border-radius:var(--rl);box-shadow:var(--shl);animation:si .25s ease;max-width:90vw}
 .ts{background:var(--okhl);color:var(--ok)}.te{background:var(--errhl);color:var(--err)}.ti{background:var(--prihl);color:var(--pri)}
 @keyframes si{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:center;justify-content:center}
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center}
 .mbg.open{display:flex}
-.modal{background:var(--surface);border-radius:var(--rxl);padding:1.5rem;width:min(540px,95vw);box-shadow:var(--shl);border:1px solid var(--bdr)}
+.modal{background:var(--surface);border-radius:var(--rxl);padding:1.5rem;width:min(540px,95vw);max-height:92dvh;overflow:auto;box-shadow:var(--shl);border:1px solid var(--bdr)}
 .mhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
 .mtl{font-weight:600;font-size:1rem}
 .mft{display:flex;justify-content:flex-end;gap:.75rem;margin-top:1.5rem}
 .sw{position:relative;display:flex;align-items:center}
-.sw i{position:absolute;left:.75rem;width:14px;height:14px;color:var(--fnt)}
-.si{padding:.5rem .75rem .5rem 2rem;border-radius:var(--rm);background:var(--s2);border:1px solid rgba(128,128,128,.15);color:var(--txt);font-size:.9375rem;width:240px}
+.sw i,.sw svg{position:absolute;left:.75rem;width:14px;height:14px;color:var(--fnt);pointer-events:none}
+.si{padding:.5rem .75rem .5rem 2rem;border-radius:var(--rm);background:var(--s2);border:1px solid rgba(128,128,128,.15);color:var(--txt);width:240px;min-height:38px}
 .si:focus{outline:none;border-color:var(--pri)}
 .tbar{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.empty{padding:2rem;text-align:center;color:var(--mut);font-size:.9rem}
+.empty{padding:2rem;text-align:center;color:var(--mut)}
 .act-btns{display:flex;gap:.35rem;flex-wrap:nowrap}
-@media(max-width:768px){.app{grid-template-columns:1fr}.sidebar{display:none}.fg{grid-template-columns:1fr}}
+.cmt{font-size:.75rem;color:var(--mut)}
+.tabs{display:flex;gap:.25rem;overflow-x:auto;border-bottom:1px solid var(--div);padding:0 .75rem;scrollbar-width:none}
+.tab{padding:.75rem 1rem;color:var(--mut);white-space:nowrap;border-bottom:2px solid transparent;font-weight:500}
+.tab.active{color:var(--pri);border-color:var(--pri)}
+.tabpane{display:none}.tabpane.active{display:block}
+.swatches{display:flex;gap:.5rem;flex-wrap:wrap}
+.swatch{width:34px;height:34px;border-radius:50%;border:2px solid transparent;box-shadow:0 0 0 1px var(--bdr)}
+.swatch.sel{border-color:var(--txt)}
+.seg{display:inline-flex;border:1px solid var(--bdr);border-radius:var(--rm);overflow:hidden}
+.seg button{padding:.45rem .9rem;color:var(--mut);min-height:36px}
+.seg button.sel{background:var(--pri);color:#fff}
+.tgl{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.6rem 0;border-bottom:1px solid var(--div)}
+.tgl:last-child{border-bottom:none}
+.tgl input{width:20px;height:20px;accent-color:var(--pri)}
+.chk{width:18px;height:18px;accent-color:var(--pri)}
+.bulkbar{display:none;align-items:center;gap:.75rem;padding:.6rem 1.25rem;background:var(--prihl);color:var(--pri);flex-wrap:wrap}
+.bulkbar.show{display:flex}
+.locked .adminonly{display:none!important}
+.bottomnav{display:none}
+
+/* ── MOBILE ── */
+@media(max-width:768px){
+  .app{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+  .sidebar{display:none}
+  .topbar{padding:.6rem 1rem}
+  .main{padding:1rem 1rem calc(76px + env(safe-area-inset-bottom))}
+  .pt{font-size:1.4rem}
+  .fg{grid-template-columns:1fr}
+  .kgrid{grid-template-columns:1fr 1fr;gap:.6rem}
+  .si{width:100%}.sw{width:100%}.tbar{width:100%}.tbar select{flex:1}
+  .ch{padding:.75rem 1rem}
+  .cb{padding:1rem}
+  .btn,.bico,.fi,.si{min-height:44px}
+  .bsm{min-height:40px;padding:.4rem .8rem}
+  .tcontainer{left:1rem;right:1rem;bottom:calc(80px + env(safe-area-inset-bottom))}
+  .mbg{align-items:flex-end}
+  .modal{width:100%;border-radius:var(--rxl) var(--rxl) 0 0;max-height:94dvh;padding-bottom:calc(1.5rem + env(safe-area-inset-bottom))}
+  .mft .btn{flex:1}
+  .bottomnav{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:150;background:var(--surface);border-top:1px solid var(--bdr);padding-bottom:env(safe-area-inset-bottom);overflow-x:auto;scrollbar-width:none}
+  .bottomnav .bn{flex:1 0 64px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:.5rem .25rem;font-size:.6875rem;color:var(--mut);min-height:56px;justify-content:center}
+  .bottomnav .bn.active{color:var(--pri);font-weight:600}
+  .bottomnav .bn svg{width:20px;height:20px}
+  /* Tabellen -> Karten */
+  body.cards table.rt thead{display:none}
+  body.cards table.rt,body.cards table.rt tbody{display:block}
+  body.cards table.rt tr{display:block;padding:.75rem 1rem;border-bottom:1px solid var(--div)}
+  body.cards table.rt tr:hover td{background:none}
+  body.cards table.rt td{display:flex;justify-content:space-between;gap:1rem;padding:.2rem 0;border:none;text-align:right;word-break:break-all}
+  body.cards table.rt td::before{content:attr(data-l);color:var(--mut);font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;text-align:left;flex-shrink:0;word-break:normal}
+  body.cards table.rt td.c-act{justify-content:flex-end;padding-top:.6rem}
+  body.cards table.rt td.c-act::before{display:none}
+  body.cards table.rt td.c-name{font-weight:600;font-size:1.05rem}
+  body.cards table.rt td[colspan]{display:block;text-align:center}
+  body.cards table.rt td[colspan]::before{display:none}
+  .act-btns{flex-wrap:wrap}
+}
 </style>
 </head>
 <body>
@@ -118,16 +185,15 @@ tr:hover td{background:var(--soff)}
   <header class="topbar">
     <div class="logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><circle cx="7" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="10" r="1.5" fill="currentColor" stroke="none"/><circle cx="17" cy="10" r="1.5" fill="currentColor" stroke="none"/></svg>
-      hAI.PeeDHCP
+      <span id="apptitle">hAI.PeeDHCP</span>
     </div>
     <div class="topbar-r">
       <div class="pill" id="hpill"><span class="dot"></span><span id="htxt">Verbinde…</span></div>
-      <button class="bico" id="ttheme" aria-label="Theme">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-      </button>
+      <button class="bico" id="ttheme" aria-label="Theme wechseln"><i data-lucide="moon"></i></button>
+      <button class="bico" id="tlock" aria-label="Admin-Login" title="Admin-Login"><i data-lucide="lock"></i></button>
     </div>
   </header>
-  <nav class="sidebar">
+  <nav class="sidebar" id="sidenav">
     <div class="nlbl">Dashboard</div>
     <a class="nitem active" data-view="overview"><i data-lucide="layout-dashboard"></i> Übersicht</a>
     <div class="nlbl">DHCP</div>
@@ -137,10 +203,10 @@ tr:hover td{background:var(--soff)}
     <a class="nitem" data-view="config"><i data-lucide="settings"></i> Konfiguration</a>
     <div class="nlbl">System</div>
     <a class="nitem" data-view="log"><i data-lucide="file-text"></i> DHCP Log</a>
+    <a class="nitem" data-view="admin"><i data-lucide="sliders-horizontal"></i> Admin</a>
   </nav>
   <main class="main">
 
-    <!-- OVERVIEW -->
     <div class="view active" id="view-overview">
       <div class="ph"><h1 class="pt">Netzwerk-Übersicht</h1><p class="pd">DHCP-Status via PiHole v6 REST-API</p></div>
       <div class="kgrid">
@@ -151,57 +217,57 @@ tr:hover td{background:var(--soff)}
       </div>
       <div class="card">
         <div class="ch"><span class="ct">Zuletzt gesehen</span><button class="btn btns bsm" onclick="initAll()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Aktualisieren</button></div>
-        <div class="tw"><table><thead><tr><th>Hostname</th><th>IP-Adresse</th><th>MAC</th><th>Lease bis</th><th>Typ</th></tr></thead><tbody id="rtb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody></table></div>
+        <div class="tw"><table class="rt"><thead><tr><th>Hostname</th><th>IP-Adresse</th><th>MAC</th><th>Lease bis</th><th>Typ</th></tr></thead><tbody id="rtb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody></table></div>
       </div>
     </div>
 
-    <!-- ALLE GERÄTE -->
     <div class="view" id="view-all">
-      <div class="ph"><h1 class="pt">Alle Geräte</h1><p class="pd">Aktive Leases + Statische Einträge kombiniert</p></div>
+      <div class="ph"><h1 class="pt">Alle Geräte</h1><p class="pd">Aktive Leases + statische Einträge. Übernehmen, umbenennen, fixieren – alles landet direkt in Pi-hole.</p></div>
       <div class="card">
         <div class="ch">
           <div class="tbar">
-            <div class="sw"><i data-lucide="search"></i><input class="si" id="allsearch" type="text" placeholder="Hostname, IP oder MAC…" oninput="filterAll()"></div>
-            <select id="allfilter" class="fi" style="width:auto;padding:.4rem .75rem" onchange="filterAll()">
-              <option value="all">Alle Typen</option>
-              <option value="dynamic">Nur dynamisch</option>
-              <option value="static">Nur statisch</option>
-              <option value="static+active">Statisch + Aktiv</option>
+            <div class="sw"><i data-lucide="search"></i><input class="si" id="allsearch" type="search" placeholder="Hostname, IP oder MAC…" oninput="renderAll()"></div>
+            <select id="allfilter" class="fi" style="width:auto" onchange="renderAll()">
+              <option value="all">Alle Typen</option><option value="dynamic">Nur dynamisch</option>
+              <option value="static">Nur statisch</option><option value="static+active">Statisch + Aktiv</option>
             </select>
           </div>
-          <button class="btn btns bsm" onclick="loadAll()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Neu laden</button>
+          <div class="tbar">
+            <button class="btn btns bsm" onclick="loadAll()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Neu laden</button>
+            <button class="btn btnp bsm adminonly" onclick="openEdit({mode:'new'})"><i data-lucide="plus" style="width:12px;height:12px"></i> Neue IP</button>
+          </div>
         </div>
+        <div class="bulkbar adminonly" id="bulkbar"><span id="bulkcnt">0 ausgewählt</span><button class="btn btnp bsm" onclick="bulkAdopt()"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i> Als statisch übernehmen</button><button class="btn btns bsm" onclick="clearSel()">Auswahl aufheben</button></div>
         <div class="tw">
-          <table>
+          <table class="rt">
             <thead><tr>
+              <th class="adminonly" style="width:36px"><input type="checkbox" class="chk" id="selall" onchange="toggleAll(this.checked)"></th>
               <th class="sortable" data-table="all" data-col="hostname">Hostname <i class="sort-icon">⇅</i></th>
               <th class="sortable" data-table="all" data-col="ip">IP-Adresse <i class="sort-icon">⇅</i></th>
-              <th class="sortable" data-table="all" data-col="mac">MAC <i class="sort-icon">⇅</i></th>
-              <th class="sortable" data-table="all" data-col="expires">Lease bis <i class="sort-icon">⇅</i></th>
-              <th>Typ</th>
-              <th>Aktionen</th>
+              <th class="sortable col-mac" data-table="all" data-col="mac">MAC <i class="sort-icon">⇅</i></th>
+              <th class="sortable col-exp" data-table="all" data-col="expires">Lease bis <i class="sort-icon">⇅</i></th>
+              <th class="col-type">Typ</th><th>Aktionen</th>
             </tr></thead>
-            <tbody id="alltb"><tr><td colspan="6" class="empty">Lade…</td></tr></tbody>
+            <tbody id="alltb"><tr><td colspan="7" class="empty">Lade…</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
-    <!-- LEASES -->
     <div class="view" id="view-leases">
       <div class="ph"><h1 class="pt">Aktive DHCP-Leases</h1><p class="pd">Quelle: PiHole v6 /api/dhcp/leases</p></div>
       <div class="card">
         <div class="ch">
-          <div class="tbar"><div class="sw"><i data-lucide="search"></i><input class="si" id="lsearch" type="text" placeholder="Hostname oder IP…" oninput="filterLeases()"></div></div>
+          <div class="tbar"><div class="sw"><i data-lucide="search"></i><input class="si" id="lsearch" type="search" placeholder="Hostname oder IP…" oninput="renderLeases()"></div></div>
           <button class="btn btns bsm" onclick="loadLeases()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Neu laden</button>
         </div>
         <div class="tw">
-          <table>
+          <table class="rt">
             <thead><tr>
               <th class="sortable" data-table="leases" data-col="hostname">Hostname<i class="sort-icon">⇅</i></th>
               <th class="sortable" data-table="leases" data-col="ip">IP-Adresse<i class="sort-icon">⇅</i></th>
-              <th class="sortable" data-table="leases" data-col="mac">MAC<i class="sort-icon">⇅</i></th>
-              <th class="sortable" data-table="leases" data-col="expires">Lease bis<i class="sort-icon">⇅</i></th>
+              <th class="sortable col-mac" data-table="leases" data-col="mac">MAC<i class="sort-icon">⇅</i></th>
+              <th class="sortable col-exp" data-table="leases" data-col="expires">Lease bis<i class="sort-icon">⇅</i></th>
               <th>Aktion</th>
             </tr></thead>
             <tbody id="ltb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody>
@@ -210,24 +276,23 @@ tr:hover td{background:var(--soff)}
       </div>
     </div>
 
-    <!-- STATIC -->
     <div class="view" id="view-static">
-      <div class="ph"><h1 class="pt">Statische Zuweisungen</h1><p class="pd">Quelle: PiHole v6 /api/config/dhcp hosts</p></div>
-      <div class="ib ibo"><div class="ibtitle">⚠️ Hinweis</div><div class="ibtxt">Änderungen werden direkt via PiHole API gespeichert.</div></div>
+      <div class="ph"><h1 class="pt">Statische Zuweisungen</h1><p class="pd">Quelle: PiHole v6 dhcp.hosts</p></div>
+      <div class="ib ibo"><div class="ibtitle">⚠️ Hinweis</div><div class="ibtxt">Änderungen werden validiert, in Pi-hole gespeichert und danach zur Kontrolle neu ausgelesen.</div></div>
       <div class="card">
         <div class="ch"><span class="ct">Statische Einträge</span>
           <div class="tbar">
             <button class="btn btns bsm" onclick="loadStatic()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i> Neu laden</button>
-            <button class="btn btnp bsm" onclick="openModal()"><i data-lucide="plus" style="width:12px;height:12px"></i> Neuer Eintrag</button>
+            <button class="btn btnp bsm adminonly" onclick="openEdit({mode:'new'})"><i data-lucide="plus" style="width:12px;height:12px"></i> Neue IP</button>
           </div>
         </div>
         <div class="tw">
-          <table>
+          <table class="rt">
             <thead><tr>
               <th class="sortable" data-table="static" data-col="hostname">Hostname<i class="sort-icon">⇅</i></th>
               <th class="sortable" data-table="static" data-col="ip">IP-Adresse<i class="sort-icon">⇅</i></th>
               <th class="sortable" data-table="static" data-col="mac">MAC<i class="sort-icon">⇅</i></th>
-              <th class="sortable" data-table="static" data-col="comment">Kommentar<i class="sort-icon">⇅</i></th>
+              <th class="sortable" data-table="static" data-col="comment">Notiz<i class="sort-icon">⇅</i></th>
               <th>Aktionen</th>
             </tr></thead>
             <tbody id="stb"><tr><td colspan="5" class="empty">Lade…</td></tr></tbody>
@@ -236,27 +301,25 @@ tr:hover td{background:var(--soff)}
       </div>
     </div>
 
-    <!-- CONFIG -->
     <div class="view" id="view-config">
       <div class="ph"><h1 class="pt">DHCP-Konfiguration</h1><p class="pd">Quelle: PiHole v6 /api/config</p></div>
       <div class="card"><div class="ch"><span class="ct">Aktuelle Einstellungen</span><button class="btn btns bsm" onclick="loadConfig()"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button></div>
         <div class="cb"><div class="fg" id="cdisplay"><p class="empty">Lade…</p></div></div></div>
-      <div class="card"><div class="ch"><span class="ct">Bearbeiten</span></div><div class="cb">
+      <div class="card adminonly"><div class="ch"><span class="ct">Bearbeiten</span></div><div class="cb">
         <div class="fg">
-          <div class="fgrp"><label class="flbl">DHCP-Start IP</label><input class="fi mono" id="cs" type="text"></div>
-          <div class="fgrp"><label class="flbl">DHCP-End IP</label><input class="fi mono" id="ce" type="text"></div>
-          <div class="fgrp"><label class="flbl">Router / Gateway</label><input class="fi mono" id="cr" type="text"></div>
-          <div class="fgrp"><label class="flbl">Lease Time</label><input class="fi" id="cl" type="text"></div>
-          <div class="fgrp"><label class="flbl">DNS Server 1</label><input class="fi mono" id="cd1" type="text"></div>
-          <div class="fgrp"><label class="flbl">DNS Server 2</label><input class="fi mono" id="cd2" type="text"></div>
+          <div class="fgrp"><label class="flbl" for="cs">DHCP-Start IP</label><input class="fi mono" id="cs" inputmode="decimal"></div>
+          <div class="fgrp"><label class="flbl" for="ce">DHCP-End IP</label><input class="fi mono" id="ce" inputmode="decimal"></div>
+          <div class="fgrp"><label class="flbl" for="cr">Router / Gateway</label><input class="fi mono" id="cr" inputmode="decimal"></div>
+          <div class="fgrp"><label class="flbl" for="cl">Lease Time</label><input class="fi" id="cl" placeholder="24h"></div>
+          <div class="fgrp"><label class="flbl" for="cd1">DNS Server 1</label><input class="fi mono" id="cd1"></div>
+          <div class="fgrp"><label class="flbl" for="cd2">DNS Server 2</label><input class="fi mono" id="cd2"></div>
           <div class="fg1"><button class="btn btnp" onclick="saveConfig()"><i data-lucide="save" style="width:14px;height:14px"></i> Speichern</button></div>
         </div>
       </div></div>
     </div>
 
-    <!-- LOG -->
     <div class="view" id="view-log">
-      <div class="ph"><h1 class="pt">DHCP-Log</h1><p class="pd">Quelle: PiHole v6 /api/queries</p></div>
+      <div class="ph"><h1 class="pt">DHCP-Log</h1><p class="pd">Quelle: PiHole v6 dnsmasq-Log</p></div>
       <div class="card">
         <div class="ch"><span class="ct">Letzte Einträge</span>
           <div class="tbar">
@@ -267,365 +330,461 @@ tr:hover td{background:var(--soff)}
             <button class="btn btns bsm" onclick="loadLog(curLogFilter)"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button>
           </div>
         </div>
-        <pre id="logpre" style="background:var(--bg);padding:1rem;font-family:var(--fm);font-size:.8125rem;line-height:1.7;overflow:auto;max-height:520px;margin:0">Lade…</pre>
+        <pre id="logpre" style="background:var(--bg);padding:1rem;font-family:var(--fm);font-size:.8125rem;line-height:1.7;overflow:auto;max-height:60dvh;margin:0;white-space:pre-wrap;word-break:break-all">Lade…</pre>
+      </div>
+    </div>
+
+    <!-- ADMIN -->
+    <div class="view" id="view-admin">
+      <div class="ph"><h1 class="pt">Admin</h1><p class="pd">Design, Anzeige, Netzwerk-Helfer und Backup. Einstellungen werden serverseitig gespeichert und gelten auf allen Geräten.</p></div>
+      <div class="card">
+        <div class="tabs" id="admintabs">
+          <button class="tab active" data-tab="design">Design</button>
+          <button class="tab" data-tab="anzeige">Anzeige</button>
+          <button class="tab" data-tab="netz">Netzwerk</button>
+          <button class="tab" data-tab="backup">Backup</button>
+          <button class="tab" data-tab="system">System</button>
+        </div>
+        <div class="cb">
+          <div class="tabpane active" id="tab-design">
+            <div class="fg">
+              <div class="fgrp fg1"><label class="flbl">Theme</label>
+                <div class="seg" data-key="theme"><button data-v="dark">Dunkel</button><button data-v="light">Hell</button><button data-v="auto">System</button></div></div>
+              <div class="fgrp fg1"><label class="flbl">Akzentfarbe</label>
+                <div class="swatches" id="swatches"></div>
+                <div class="row" style="margin-top:.5rem"><input type="color" class="fi" id="s-accent" style="max-width:80px"><span class="fhint">Eigene Farbe</span></div></div>
+              <div class="fgrp"><label class="flbl">Dichte</label>
+                <div class="seg" data-key="density"><button data-v="comfortable">Komfortabel</button><button data-v="compact">Kompakt</button></div></div>
+              <div class="fgrp"><label class="flbl">Eckenradius</label>
+                <div class="seg" data-key="radius"><button data-v="sm">Eckig</button><button data-v="md">Mittel</button><button data-v="lg">Rund</button></div></div>
+              <div class="fgrp fg1"><label class="flbl">Schriftgröße: <span id="fsval">100</span>%</label><input type="range" min="85" max="130" step="5" id="s-font_scale"></div>
+              <div class="fgrp fg1"><label class="flbl">App-Titel</label><input class="fi" id="s-title" maxlength="40"></div>
+            </div>
+          </div>
+          <div class="tabpane" id="tab-anzeige">
+            <div class="fg">
+              <div class="fgrp"><label class="flbl">Startseite</label>
+                <select class="fi" id="s-default_view"><option value="overview">Übersicht</option><option value="all">Alle Geräte</option><option value="leases">Aktive Leases</option><option value="static">Statische Einträge</option><option value="config">Konfiguration</option><option value="log">DHCP Log</option></select></div>
+              <div class="fgrp"><label class="flbl">Auto-Aktualisierung</label>
+                <select class="fi" id="s-refresh_seconds"><option value="0">Aus</option><option value="15">15 s</option><option value="30">30 s</option><option value="60">60 s</option><option value="300">5 min</option></select></div>
+              <div class="fgrp"><label class="flbl">Datumsformat Lease</label>
+                <select class="fi" id="s-date_format"><option value="de">Deutsch (03.10.2026, 23:50)</option><option value="iso">ISO (2026-10-03 23:50)</option><option value="rel">Relativ (in 3 h)</option></select></div>
+            </div>
+            <div style="margin-top:1rem">
+              <label class="tgl"><span>Mobil: Tabellen als Karten anzeigen</span><input type="checkbox" id="s-mobile_cards"></label>
+              <label class="tgl"><span>Spalte MAC anzeigen (Desktop)</span><input type="checkbox" id="s-show_mac"></label>
+              <label class="tgl"><span>Spalte „Lease bis“ anzeigen (Desktop)</span><input type="checkbox" id="s-show_expires"></label>
+              <label class="tgl"><span>Spalte „Typ“ anzeigen (Desktop)</span><input type="checkbox" id="s-show_type"></label>
+              <label class="tgl"><span>Geräte ohne Hostname ausblenden</span><input type="checkbox" id="s-hide_unnamed"></label>
+              <label class="tgl"><span>Vor dem Löschen nachfragen</span><input type="checkbox" id="s-confirm_delete"></label>
+            </div>
+          </div>
+          <div class="tabpane" id="tab-netz">
+            <p class="fhint" style="margin-bottom:1rem">Bereich für „Freie IP vorschlagen“. Leer = /24 des Gateways außerhalb des DHCP-Pools.</p>
+            <div class="fg">
+              <div class="fgrp"><label class="flbl">Vorschlag ab</label><input class="fi mono" id="s-suggest_start" placeholder="192.168.178.20"></div>
+              <div class="fgrp"><label class="flbl">Vorschlag bis</label><input class="fi mono" id="s-suggest_end" placeholder="192.168.178.99"></div>
+            </div>
+          </div>
+          <div class="tabpane" id="tab-backup">
+            <div class="ib ibo"><div class="ibtxt">Der Export enthält alle statischen Einträge direkt aus Pi-hole, deine Notizen und die App-Einstellungen.</div></div>
+            <div class="tbar">
+              <button class="btn btns" onclick="exportAll()"><i data-lucide="download" style="width:14px;height:14px"></i> Export (JSON)</button>
+              <label class="btn btns adminonly" style="cursor:pointer"><i data-lucide="upload" style="width:14px;height:14px"></i> Import (zusammenführen)<input type="file" id="impfile" accept="application/json" hidden></label>
+            </div>
+          </div>
+          <div class="tabpane" id="tab-system">
+            <div class="fg" id="sysinfo"></div>
+            <div class="tbar" style="margin-top:1rem"><button class="btn btns" onclick="checkHealth();toast('Status geprüft','info')">Verbindung testen</button><button class="btn btnd adminonly" onclick="resetSettings()">Design/Anzeige zurücksetzen</button></div>
+          </div>
+          <div class="mft adminonly" style="border-top:1px solid var(--div);padding-top:1rem" id="adminsave"><button class="btn btnp" onclick="saveSettings()"><i data-lucide="save" style="width:14px;height:14px"></i> Einstellungen speichern</button></div>
+        </div>
       </div>
     </div>
 
   </main>
 </div>
+<nav class="bottomnav" id="bnav">
+  <a class="bn active" data-view="overview"><i data-lucide="layout-dashboard"></i>Übersicht</a>
+  <a class="bn" data-view="all"><i data-lucide="network"></i>Geräte</a>
+  <a class="bn" data-view="leases"><i data-lucide="list"></i>Leases</a>
+  <a class="bn" data-view="static"><i data-lucide="bookmark"></i>Statisch</a>
+  <a class="bn" data-view="config"><i data-lucide="settings"></i>Config</a>
+  <a class="bn" data-view="log"><i data-lucide="file-text"></i>Log</a>
+  <a class="bn" data-view="admin"><i data-lucide="sliders-horizontal"></i>Admin</a>
+</nav>
 
-<!-- MODAL -->
-<div class="mbg" id="amodal">
-  <div class="modal">
-    <div class="mhd"><h2 class="mtl" id="modal-title">Statischen Eintrag hinzufügen</h2><button class="bico" onclick="closeModal()"><i data-lucide="x"></i></button></div>
-    <div class="fg">
-      <div class="fgrp"><label class="flbl">MAC-Adresse *</label><input class="fi mono" id="nm" type="text" placeholder="aa:bb:cc:dd:ee:ff"></div>
-      <div class="fgrp"><label class="flbl">IP-Adresse *</label><input class="fi mono" id="ni" type="text" placeholder="192.168.1.50"></div>
-      <div class="fgrp fg1"><label class="flbl">Hostname</label><input class="fi" id="nh" type="text" placeholder="drucker-kueche"></div>
-    </div>
-    <div class="mft"><button class="btn btns" onclick="closeModal()">Abbrechen</button><button class="btn btnp" onclick="addStatic()"><i data-lucide="plus" style="width:14px;height:14px"></i> Speichern</button></div>
+<!-- Edit / Neu / Übernehmen -->
+<div class="mbg" id="emodal"><div class="modal">
+  <div class="mhd"><h2 class="mtl" id="e-title">Statischer Eintrag</h2><button class="bico" onclick="closeEdit()" aria-label="Schließen"><i data-lucide="x"></i></button></div>
+  <div class="fg">
+    <div class="fgrp fg1"><label class="flbl" for="e-mac">MAC-Adresse *</label><input class="fi mono" id="e-mac" placeholder="aa:bb:cc:dd:ee:ff" autocapitalize="off" autocomplete="off"></div>
+    <div class="fgrp fg1"><label class="flbl" for="e-ip">IP-Adresse *</label>
+      <div class="row"><input class="fi mono" id="e-ip" placeholder="192.168.178.50" inputmode="decimal" autocomplete="off"><button class="btn btns" type="button" onclick="suggestIp()" title="Freie IP vorschlagen"><i data-lucide="wand-2" style="width:14px;height:14px"></i></button></div>
+      <div class="fhint" id="e-sugg"></div></div>
+    <div class="fgrp fg1"><label class="flbl" for="e-host">Hostname</label><input class="fi" id="e-host" placeholder="drucker-kueche" autocapitalize="off" autocomplete="off"><span class="fhint">a–z, 0–9 und „-“, wird in Pi-hole als DNS-Name genutzt.</span></div>
+    <div class="fgrp fg1"><label class="flbl" for="e-cmt">Notiz (nur lokal in dieser App)</label><input class="fi" id="e-cmt" maxlength="120"></div>
   </div>
-</div>
+  <div class="mft"><button class="btn btns" onclick="closeEdit()">Abbrechen</button><button class="btn btnp" onclick="saveEdit()"><i data-lucide="save" style="width:14px;height:14px"></i> In Pi-hole speichern</button></div>
+</div></div>
+
+<!-- Login -->
+<div class="mbg" id="lmodal"><div class="modal">
+  <div class="mhd"><h2 class="mtl">Admin-Login</h2><button class="bico" onclick="closeLogin()" aria-label="Schließen"><i data-lucide="x"></i></button></div>
+  <div class="fgrp"><label class="flbl" for="l-pin">PIN</label><input class="fi" id="l-pin" type="password" inputmode="numeric" autocomplete="current-password"></div>
+  <div class="mft"><button class="btn btns" onclick="closeLogin()">Abbrechen</button><button class="btn btnp" onclick="doLogin()">Anmelden</button></div>
+</div></div>
 
 <div class="tcontainer" id="tc"></div>
 
 <script>
-let leases=[], statics=[], allDevices=[], cfg={}, curLogFilter='all';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let leases=[],statics=[],allDevices=[],cfg={},curLogFilter='all',S={},pinRequired=false,isAdmin=true,token=sessionStorage.getItem('adm')||'',sel=new Set(),editCtx=null;
 const sortState={leases:{col:null,dir:'asc'},static:{col:null,dir:'asc'},all:{col:'ip',dir:'asc'}};
+const ACCENTS=['#4f98a3','#3b82f6','#8b5cf6','#ec4899','#ef4444','#f59e0b','#22c55e','#64748b'];
+const DEF={title:'hAI.PeeDHCP',theme:'dark',accent:'#4f98a3',density:'comfortable',radius:'md',font_scale:100,mobile_cards:true,default_view:'overview',refresh_seconds:0,date_format:'de',confirm_delete:true,show_mac:true,show_expires:true,show_type:true,hide_unnamed:false,suggest_start:'',suggest_end:''};
 
 async function api(method,path,body){
   try{
     const opts={method,headers:{'Content-Type':'application/json'}};
-    if(body) opts.body=JSON.stringify(body);
+    if(token) opts.headers['X-Admin-Token']=token;
+    if(body!==undefined) opts.body=JSON.stringify(body);
     const r=await fetch(path,opts);
-    const d=await r.json();
+    const d=await r.json().catch(()=>({}));
+    if(r.status===401&&d.auth){isAdmin=false;applyAdminUI();openLogin();throw new Error(d.error);}
     if(!r.ok) throw new Error(d.error||r.status);
     return [d,null];
   }catch(e){return [null,e.message];}
 }
 
+/* ── Design / Settings ── */
+function applySettings(s){
+  S={...DEF,...s};
+  const r=document.documentElement;
+  let theme=S.theme; if(theme==='auto') theme=matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  r.setAttribute('data-theme',theme);
+  r.dataset.radius=S.radius; r.dataset.density=S.density;
+  r.style.setProperty('--fs',S.font_scale/100);
+  r.style.setProperty('--pri',S.accent);
+  r.style.setProperty('--prih',`color-mix(in srgb,${S.accent} 80%,#000)`);
+  r.style.setProperty('--prihl',`color-mix(in srgb,${S.accent} 18%,var(--surface))`);
+  document.body.classList.toggle('cards',!!S.mobile_cards);
+  document.title=S.title+' – DHCP Admin'; $('apptitle').textContent=S.title;
+  document.querySelector('meta[name=theme-color]').content=theme==='dark'?'#171614':'#f7f6f2';
+  hideCols();
+  $('ttheme').innerHTML=`<i data-lucide="${theme==='dark'?'sun':'moon'}"></i>`;
+  localStorage.setItem('hai_settings',JSON.stringify(S));
+  clearInterval(window._ri); if(S.refresh_seconds>0) window._ri=setInterval(()=>{if(!document.hidden) refreshCurrent();},S.refresh_seconds*1000);
+  lucide.createIcons();
+}
+function hideCols(){
+  let css='';
+  if(!S.show_mac) css+='.col-mac{display:none}';
+  if(!S.show_expires) css+='.col-exp{display:none}';
+  if(!S.show_type) css+='.col-type{display:none}';
+  let st=$('dyncss'); if(!st){st=document.createElement('style');st.id='dyncss';document.head.appendChild(st);}
+  st.textContent=css?`@media(min-width:769px){${css}}`:'';
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change',()=>{if(S.theme==='auto')applySettings(S);});
+
+function fillAdminForm(){
+  document.querySelectorAll('.seg').forEach(seg=>{
+    const k=seg.dataset.key; seg.querySelectorAll('button').forEach(b=>{b.classList.toggle('sel',b.dataset.v===S[k]);});
+  });
+  $('swatches').innerHTML=ACCENTS.map(c=>`<button class="swatch ${c.toLowerCase()===S.accent.toLowerCase()?'sel':''}" style="background:${c}" data-c="${c}" aria-label="${c}"></button>`).join('');
+  $('s-accent').value=S.accent;
+  ['title','default_view','refresh_seconds','date_format','suggest_start','suggest_end'].forEach(k=>$('s-'+k).value=S[k]);
+  $('s-font_scale').value=S.font_scale; $('fsval').textContent=S.font_scale;
+  ['mobile_cards','show_mac','show_expires','show_type','hide_unnamed','confirm_delete'].forEach(k=>$('s-'+k).checked=!!S[k]);
+}
+function collectForm(){
+  const o={...S};
+  document.querySelectorAll('.seg').forEach(seg=>{const b=seg.querySelector('.sel');if(b)o[seg.dataset.key]=b.dataset.v;});
+  o.accent=$('s-accent').value; o.title=$('s-title').value;
+  o.default_view=$('s-default_view').value; o.refresh_seconds=+$('s-refresh_seconds').value; o.date_format=$('s-date_format').value;
+  o.suggest_start=$('s-suggest_start').value.trim(); o.suggest_end=$('s-suggest_end').value.trim();
+  o.font_scale=+$('s-font_scale').value;
+  ['mobile_cards','show_mac','show_expires','show_type','hide_unnamed','confirm_delete'].forEach(k=>o[k]=$('s-'+k).checked);
+  return o;
+}
+function previewForm(){applySettings(collectForm());renderAll();renderLeases();}
+async function saveSettings(){
+  const [d,e]=await api('POST','/api/settings',collectForm());
+  if(e){toast('Fehler: '+e,'error');return;}
+  applySettings(d.settings); fillAdminForm(); toast('Einstellungen gespeichert','success');
+}
+async function resetSettings(){
+  if(!confirm('Design und Anzeige auf Standard zurücksetzen?')) return;
+  const [d,e]=await api('POST','/api/settings/reset',{}); if(e){toast(e,'error');return;}
+  applySettings(d.settings); fillAdminForm(); toast('Zurückgesetzt','info');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('.seg button'); if(b){b.parentElement.querySelectorAll('button').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');previewForm();}
+  const sw=e.target.closest('.swatch'); if(sw){$('s-accent').value=sw.dataset.c;previewForm();fillSw();}
+  const t=e.target.closest('.tab'); if(t){document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));document.querySelectorAll('.tabpane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+t.dataset.tab));if(t.dataset.tab==='system')loadSys();}
+});
+function fillSw(){document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('sel',s.dataset.c.toLowerCase()===$('s-accent').value.toLowerCase()));}
+['s-accent','s-font_scale'].forEach(id=>$(id).addEventListener('input',()=>{$('fsval').textContent=$('s-font_scale').value;fillSw();previewForm();}));
+['s-default_view','s-refresh_seconds','s-date_format','s-title','s-mobile_cards','s-show_mac','s-show_expires','s-show_type','s-hide_unnamed','s-confirm_delete'].forEach(id=>$(id).addEventListener('change',previewForm));
+
+/* ── Admin-Login ── */
+function applyAdminUI(){document.body.classList.toggle('locked',!isAdmin);$('tlock').style.display=pinRequired?'':'none';$('tlock').innerHTML=`<i data-lucide="${isAdmin?'unlock':'lock'}"></i>`;lucide.createIcons();}
+function openLogin(){if(!pinRequired)return;$('lmodal').classList.add('open');setTimeout(()=>$('l-pin').focus(),50);}
+function closeLogin(){$('lmodal').classList.remove('open');}
+async function doLogin(){
+  const [d,e]=await api('POST','/api/admin/login',{pin:$('l-pin').value});
+  if(e){toast(e,'error');return;}
+  token=d.token;sessionStorage.setItem('adm',token);isAdmin=true;$('l-pin').value='';closeLogin();applyAdminUI();toast('Angemeldet','success');
+}
+$('l-pin').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+$('tlock').addEventListener('click',()=>{if(isAdmin&&pinRequired){token='';sessionStorage.removeItem('adm');isAdmin=false;applyAdminUI();toast('Abgemeldet','info');}else openLogin();});
+
 async function checkHealth(){
-  const pill=document.getElementById('hpill'),txt=document.getElementById('htxt');
   const [d,e]=await api('GET','/api/health');
-  if(e||d?.status!=='ok'){
-    pill.style.cssText='background:var(--errhl);color:var(--err)';
-    txt.textContent='PiHole nicht erreichbar';
-  } else {
-    pill.style.cssText='background:var(--okhl);color:var(--ok)';
-    txt.textContent='PiHole aktiv';
-  }
+  if(e||d?.status!=='ok'){$('hpill').style.cssText='background:var(--errhl);color:var(--err)';$('htxt').textContent='PiHole offline';}
+  else{$('hpill').style.cssText='background:var(--okhl);color:var(--ok)';$('htxt').textContent='PiHole aktiv';}
+  return d;
+}
+async function loadSys(){
+  const [d]=await api('GET','/api/health');
+  $('sysinfo').innerHTML=[['Pi-hole',d?.pihole||'—'],['Status',d?.status||'offline'],['Geräte (Leases/Statisch)',`${leases.length} / ${statics.length}`],['Admin-Schutz',pinRequired?'PIN aktiv':'Aus (ADMIN_PIN setzen!)']]
+    .map(([k,v])=>`<div><div class="fhint">${k}</div><div class="mono">${esc(v)}</div></div>`).join('');
 }
 
+/* ── Sortierung ── */
 function ipN(ip){return ip?ip.split('.').reduce((a,b)=>a*256+parseInt(b),0):0;}
-
 function cmpVal(a,b,col){
-  const av=a[col]||'', bv=b[col]||'';
+  const av=a[col]||'',bv=b[col]||'';
   if(col==='ip') return ipN(av)-ipN(bv);
-  if(col==='expires'){
-    const an=Number(av),bn=Number(bv);
-    if(!isNaN(an)&&!isNaN(bn)) return an-bn;
-  }
+  if(col==='expires'){const an=Number(av),bn=Number(bv);if(!isNaN(an)&&!isNaN(bn)) return an-bn;}
   return av.toString().localeCompare(bv.toString(),undefined,{numeric:true});
 }
-
-function sortData(arr,table){
-  const {col,dir}=sortState[table];
-  if(!col) return [...arr];
-  return [...arr].sort((a,b)=>dir==='asc'?cmpVal(a,b,col):cmpVal(b,a,col));
-}
-
+function sortData(arr,table){const {col,dir}=sortState[table];if(!col) return [...arr];return [...arr].sort((a,b)=>dir==='asc'?cmpVal(a,b,col):cmpVal(b,a,col));}
 function updateSortHeaders(table){
   const {col,dir}=sortState[table];
   document.querySelectorAll(`th[data-table="${table}"]`).forEach(th=>{
-    th.classList.remove('sort-asc','sort-desc');
-    const ic=th.querySelector('.sort-icon');
-    if(th.dataset.col===col){
-      th.classList.add(dir==='asc'?'sort-asc':'sort-desc');
-      if(ic) ic.textContent=dir==='asc'?'↑':'↓';
-    } else { if(ic) ic.textContent='⇅'; }
+    th.classList.remove('sort-asc','sort-desc');const ic=th.querySelector('.sort-icon');
+    if(th.dataset.col===col){th.classList.add(dir==='asc'?'sort-asc':'sort-desc');if(ic) ic.textContent=dir==='asc'?'↑':'↓';}else if(ic) ic.textContent='⇅';
   });
 }
+document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>{
+  const t=th.dataset.table,c=th.dataset.col;
+  if(sortState[t].col===c) sortState[t].dir=sortState[t].dir==='asc'?'desc':'asc'; else{sortState[t].col=c;sortState[t].dir='asc';}
+  updateSortHeaders(t);if(t==='leases')renderLeases();if(t==='static')renderStatic();if(t==='all')renderAll();
+}));
 
-function handleSortClick(th){
-  const table=th.dataset.table,col=th.dataset.col;
-  if(sortState[table].col===col){
-    sortState[table].dir=sortState[table].dir==='asc'?'desc':'asc';
-  } else { sortState[table].col=col; sortState[table].dir='asc'; }
-  updateSortHeaders(table);
-  if(table==='leases') renderLeases();
-  if(table==='static') renderStatic();
-  if(table==='all') renderAll();
-}
-
-document.querySelectorAll('th.sortable').forEach(th=>th.addEventListener('click',()=>handleSortClick(th)));
-
-// ── Alle Geräte ────────────────────────────────────────────────
-async function loadAll(){
-  document.getElementById('alltb').innerHTML='<tr><td colspan="6" class="empty"><span class="spin"></span> Lade…</td></tr>';
-  const [d,e]=await api('GET','/api/all_devices');
-  if(e){toast('Geräte: '+e,'error');return;}
-  allDevices=d||[];
-  renderAll();
-}
-
-function renderAll(){
-  const tb=document.getElementById('alltb');
-  let data=sortData(allDevices,'all');
-  const q=(document.getElementById('allsearch')?.value||'').toLowerCase();
-  const f=document.getElementById('allfilter')?.value||'all';
-  if(q) data=data.filter(d=>(d.hostname+d.ip+d.mac).toLowerCase().includes(q));
-  if(f!=='all') data=data.filter(d=>d.type===f);
-  if(!data.length){tb.innerHTML='<tr><td colspan="6" class="empty">Keine Einträge</td></tr>';return;}
-  tb.innerHTML=data.map(d=>{
-    const mac=d.mac, ip=d.ip, hn=d.hostname||'';
-    let typeBadge='';
-    if(d.type==='static+active') typeBadge='<span class="badge bp">Statisch+Aktiv</span>';
-    else if(d.type==='static')   typeBadge='<span class="badge bb">Statisch</span>';
-    else                          typeBadge='<span class="badge bg">Dynamisch</span>';
-
-    let actions='';
-    // Promote: nur wenn noch nicht statisch
-    if(!d.is_static){
-      actions+=`<button class="btn btns bsm" onclick="promoteDevice('${mac}','${ip}','${hn}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button>`;
-    }
-    // Verlängern: nur wenn aktiver Lease
-    if(d.type==='dynamic'||d.type==='static+active'){
-      actions+=`<button class="btn btnw bsm" onclick="renewDevice('${mac}','${hn}')" title="Lease verlängern/erneuern"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button>`;
-    }
-    // Löschen statisch
-    if(d.is_static){
-      actions+=`<button class="btn btnd bsm" onclick="delStaticDevice('${mac}','${hn}')" title="Statischen Eintrag löschen"><i data-lucide="bookmark-x" style="width:12px;height:12px"></i></button>`;
-    }
-    // Lease löschen
-    if(d.type==='dynamic'||d.type==='static+active'){
-      actions+=`<button class="btn btnd bsm" onclick="delLeaseDevice('${mac}','${hn}')" title="Aktiven Lease löschen"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>`;
-    }
-
-    return `<tr>
-      <td>${hn||'<span style="color:var(--fnt)">*</span>'}</td>
-      <td class="mono">${ip}</td>
-      <td class="mono" style="color:var(--mut)">${mac}</td>
-      <td style="color:var(--mut)">${fmtExp(d.expires)}</td>
-      <td>${typeBadge}</td>
-      <td><div class="act-btns">${actions}</div></td>
-    </tr>`;
-  }).join('');
-  lucide.createIcons();
-}
-
-function filterAll(){renderAll();}
-
-async function promoteDevice(mac,ip,hostname){
-  document.getElementById('nm').value=mac;
-  document.getElementById('ni').value=ip;
-  document.getElementById('nh').value=hostname;
-  document.getElementById('modal-title').textContent='Als statisch fixieren';
-  openModal();
-}
-
-async function renewDevice(mac,hostname){
-  if(!confirm(`Lease für ${hostname||mac} erneuern?\n(Gerät erhält bei nächster DHCP-Anfrage neuen Lease)`)) return;
-  const [,e]=await api('POST','/api/lease/renew',{mac});
-  if(e){toast('Fehler: '+e,'error');return;}
-  toast(`Lease für ${hostname||mac} zurückgesetzt`,'success');
-  setTimeout(loadAll,1000);
-}
-
-async function delStaticDevice(mac,hostname){
-  if(!confirm(`Statischen Eintrag für ${hostname||mac} löschen?`)) return;
-  const [,e]=await api('DELETE',`/api/static/${mac}`);
-  if(e){toast('Fehler: '+e,'error');return;}
-  toast(`${hostname||mac} aus statischen Einträgen entfernt`,'info');
-  setTimeout(loadAll,500);
-}
-
-async function delLeaseDevice(mac,hostname){
-  if(!confirm(`Aktiven Lease für ${hostname||mac} löschen?`)) return;
-  const [,e]=await api('DELETE',`/api/lease/${mac}`);
-  if(e){toast('Fehler: '+e,'error');return;}
-  toast(`Lease für ${hostname||mac} gelöscht`,'info');
-  setTimeout(loadAll,1000);
-}
-
-// ── Leases ─────────────────────────────────────────────────────
-async function loadLeases(){
-  document.getElementById('ltb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
-  const [d,e]=await api('GET','/api/leases');
-  if(e){toast('Leases: '+e,'error');return;}
-  leases=d||[];
-  document.getElementById('kl').textContent=leases.length;
-  renderLeases();
-  renderRecent();
-}
-
-function renderLeases(){
-  const tb=document.getElementById('ltb');
-  const data=sortData(leases,'leases');
-  const q=(document.getElementById('lsearch')?.value||'').toLowerCase();
-  const filtered=q?data.filter(l=>(l.hostname+l.ip+l.mac).toLowerCase().includes(q)):data;
-  if(!filtered.length){tb.innerHTML='<tr><td colspan="5" class="empty">Keine Einträge</td></tr>';return;}
-  tb.innerHTML=filtered.map(l=>{
-    const hn=l.hostname||'';
-    return `<tr>
-    <td>${hn||'<span style="color:var(--fnt)">*</span>'}</td>
-    <td class="mono">${l.ip}</td>
-    <td class="mono" style="color:var(--mut)">${l.mac}</td>
-    <td style="color:var(--mut)">${fmtExp(l.expires)}</td>
-    <td><div class="act-btns">
-      <button class="btn btns bsm" onclick="promoteDevice('${l.mac}','${l.ip}','${hn}')" title="Als statisch fixieren"><i data-lucide="bookmark-plus" style="width:12px;height:12px"></i></button>
-      <button class="btn btnw bsm" onclick="renewDevice('${l.mac}','${hn}')" title="Lease verlängern"><i data-lucide="refresh-cw" style="width:12px;height:12px"></i></button>
-      <button class="btn btnd bsm" onclick="delLeaseDevice('${l.mac}','${hn}')" title="Lease löschen"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>
-    </div></td>
-  </tr>`;
-  }).join('');
-  lucide.createIcons();
-}
-
-function filterLeases(){renderLeases();}
-
-function renderRecent(){
-  document.getElementById('rtb').innerHTML=leases.slice(0,8).map(l=>`<tr>
-    <td>${l.hostname||'<span style="color:var(--fnt)">*</span>'}</td>
-    <td class="mono">${l.ip}</td>
-    <td class="mono" style="color:var(--mut)">${l.mac}</td>
-    <td style="color:var(--mut)">${fmtExp(l.expires)}</td>
-    <td><span class="badge bg">Aktiv</span></td>
-  </tr>`).join('')||'<tr><td colspan="5" class="empty">Keine Leases</td></tr>';
-}
-
-// ── Static ─────────────────────────────────────────────────────
-async function loadStatic(){
-  document.getElementById('stb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
-  const [d,e]=await api('GET','/api/static');
-  if(e){toast('Static: '+e,'error');return;}
-  statics=d||[];
-  document.getElementById('ks').textContent=statics.length;
-  renderStatic();
-}
-
-function renderStatic(){
-  const tb=document.getElementById('stb');
-  const data=sortData(statics,'static');
-  if(!data.length){tb.innerHTML='<tr><td colspan="5" class="empty">Keine statischen Einträge</td></tr>';return;}
-  tb.innerHTML=data.map(e=>`<tr>
-    <td>${e.hostname||'—'}</td>
-    <td class="mono">${e.ip}</td>
-    <td class="mono" style="color:var(--mut)">${e.mac}</td>
-    <td style="color:var(--mut)">${e.comment||'—'}</td>
-    <td><button class="btn btnd bsm" onclick="delStaticDevice('${e.mac}','${e.hostname}')"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button></td>
-  </tr>`).join('');
-  lucide.createIcons();
-}
-
-async function addStatic(){
-  const mac=document.getElementById('nm').value.trim();
-  const ip=document.getElementById('ni').value.trim();
-  const hostname=document.getElementById('nh').value.trim();
-  if(!mac||!ip){toast('MAC und IP sind Pflichtfelder','error');return;}
-  const [d,e]=await api('POST','/api/static',{mac,ip,hostname});
-  if(e){toast('Fehler: '+e,'error');return;}
-  toast(`${hostname||mac} gespeichert`,'success');
-  closeModal();
-  ['nm','ni','nh'].forEach(id=>document.getElementById(id).value='');
-  loadStatic();
-  if(document.getElementById('view-all').classList.contains('active')) loadAll();
-}
-
-// ── Config ────────────────────────────────────────────────────
-async function loadConfig(){
-  const [d,e]=await api('GET','/api/config');
-  if(e){toast('Config: '+e,'error');return;}
-  cfg=d||{};
-  const show={...cfg};
-  document.getElementById('cdisplay').innerHTML=Object.entries(show).map(([k,v])=>`
-    <div style="display:flex;flex-direction:column;gap:.25rem">
-      <div style="font-size:.8125rem;color:var(--mut);font-weight:500">${k}</div>
-      <div class="mono" style="font-size:.8125rem;background:var(--soff);padding:.25rem .5rem;border-radius:var(--r);border:1px solid var(--bdr)">${v||'—'}</div>
-    </div>`).join('');
-  document.getElementById('cs').value=cfg.DHCP_START||'';
-  document.getElementById('ce').value=cfg.DHCP_END||'';
-  document.getElementById('cr').value=cfg.DHCP_ROUTER||'';
-  document.getElementById('cl').value=cfg.DHCP_LEASETIME||'';
-  document.getElementById('cd1').value=cfg.PIHOLE_DNS_1||'';
-  document.getElementById('cd2').value=cfg.PIHOLE_DNS_2||'';
-  const s=ipN(cfg.DHCP_START),en=ipN(cfg.DHCP_END);
-  if(s&&en) document.getElementById('kp').textContent=en-s+1;
-  document.getElementById('kt').textContent=cfg.DHCP_LEASETIME||'—';
-}
-
-async function saveConfig(){
-  const [,e]=await api('POST','/api/config',{
-    DHCP_START:document.getElementById('cs').value,
-    DHCP_END:document.getElementById('ce').value,
-    DHCP_ROUTER:document.getElementById('cr').value,
-    DHCP_LEASETIME:document.getElementById('cl').value,
-    PIHOLE_DNS_1:document.getElementById('cd1').value,
-    PIHOLE_DNS_2:document.getElementById('cd2').value,
-  });
-  if(e){toast('Fehler: '+e,'error');return;}
-  toast('Gespeichert ✓','success');
-  loadConfig();
-}
-
-// ── Log ────────────────────────────────────────────────────────
-async function loadLog(filter='all'){
-  curLogFilter=filter;
-  document.getElementById('logpre').textContent='Lade…';
-  const [d,e]=await api('GET','/api/log');
-  if(e){document.getElementById('logpre').textContent='Fehler: '+e;return;}
-  let lines=d.lines||[];
-  if(filter!=='all') lines=lines.filter(l=>l.includes(filter));
-  document.getElementById('logpre').innerHTML=lines.length
-    ?lines.map(l=>{
-        let c='';
-        if(l.includes('DHCPACK'))c='color:var(--ok)';
-        else if(l.includes('DHCPOFFER'))c='color:var(--pri)';
-        else if(l.includes('DHCPREQUEST'))c='color:var(--warn)';
-        else if(l.includes('DHCPDISCOVER'))c='color:var(--blu)';
-        return `<span style="${c}">${l.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</span>`;
-      }).join('\n')
-    :'[Keine Einträge gefunden]';
-}
-
-// ── Helpers ────────────────────────────────────────────────────
+/* ── Helpers ── */
 function fmtExp(ts){
-  if(!ts||ts==='0') return '—';
-  const n=Number(ts);
-  return (!isNaN(n)&&n>1e9)?new Date(n*1000).toLocaleString('de-DE'):ts;
+  if(!ts||ts==='0'||ts===0) return '—';
+  const n=Number(ts); if(isNaN(n)||n<=1e9) return esc(ts);
+  const d=new Date(n*1000);
+  if(S.date_format==='iso') return d.toISOString().slice(0,16).replace('T',' ');
+  if(S.date_format==='rel'){const m=Math.round((d-Date.now())/60000);const a=Math.abs(m);const t=a>=60?Math.round(a/60)+' h':a+' min';return m>=0?'in '+t:'vor '+t;}
+  return d.toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'});
 }
-function toast(msg,type='info'){
-  const c=document.getElementById('tc'),t=document.createElement('div');
-  t.className=`toast t${type[0]}`;t.textContent=msg;c.appendChild(t);setTimeout(()=>t.remove(),3500);
-}
-function openModal(){document.getElementById('amodal').classList.add('open');lucide.createIcons();}
-function closeModal(){document.getElementById('amodal').classList.remove('open');}
+function toast(msg,type='info'){const t=document.createElement('div');t.className=`toast t${type[0]}`;t.textContent=msg;$('tc').appendChild(t);setTimeout(()=>t.remove(),type==='error'?6000:3500);}
+function ask(msg){return S.confirm_delete?confirm(msg):true;}
+const ic=(n)=>`<i data-lucide="${n}" style="width:14px;height:14px"></i>`;
+const nameOrStar=h=>h?esc(h):'<span style="color:var(--fnt)">*</span>';
 
-document.querySelectorAll('.nitem').forEach(item=>{
-  item.addEventListener('click',()=>{
-    const v=item.dataset.view;
-    document.querySelectorAll('.nitem').forEach(n=>n.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(vv=>vv.classList.remove('active'));
-    item.classList.add('active');
-    document.getElementById('view-'+v)?.classList.add('active');
-    if(v==='all')    loadAll();
-    if(v==='leases') loadLeases();
-    if(v==='static') loadStatic();
-    if(v==='config') loadConfig();
-    if(v==='log')    loadLog();
-  });
+/* ── Alle Geräte ── */
+async function loadAll(){
+  $('alltb').innerHTML='<tr><td colspan="7" class="empty"><span class="spin"></span> Lade…</td></tr>';
+  const [d,e]=await api('GET','/api/devices'); if(e){toast('Geräte: '+e,'error');return;}
+  allDevices=d||[]; sel.clear(); renderAll();
+}
+function renderAll(){
+  const tb=$('alltb'); let data=sortData(allDevices,'all');
+  const q=($('allsearch').value||'').toLowerCase(),f=$('allfilter').value;
+  if(q) data=data.filter(d=>(d.hostname+d.ip+d.mac+(d.comment||'')).toLowerCase().includes(q));
+  if(f!=='all') data=data.filter(d=>d.type===f);
+  if(S.hide_unnamed) data=data.filter(d=>d.hostname);
+  if(!data.length){tb.innerHTML='<tr><td colspan="7" class="empty">Keine Einträge</td></tr>';return;}
+  tb.innerHTML=data.map(d=>{
+    const badge=d.type==='static+active'?'<span class="badge bp">Statisch+Aktiv</span>':d.type==='static'?'<span class="badge bb">Statisch</span>':'<span class="badge bg">Dynamisch</span>';
+    const m=esc(d.mac);let a='';
+    if(!d.is_static) a+=`<button class="btn btnp bsm adminonly" data-act="adopt" data-mac="${m}" title="Als statisch übernehmen">${ic('bookmark-plus')} <span>Übernehmen</span></button>`;
+    else a+=`<button class="btn btns bsm adminonly" data-act="edit" data-mac="${m}" title="Umbenennen / IP ändern">${ic('pencil')}</button>`;
+    if(d.type!=='static') a+=`<button class="btn btnw bsm adminonly" data-act="renew" data-mac="${m}" title="Lease zurücksetzen">${ic('refresh-cw')}</button>`;
+    if(d.is_static) a+=`<button class="btn btnd bsm adminonly" data-act="delstatic" data-mac="${m}" title="Statischen Eintrag löschen">${ic('bookmark-x')}</button>`;
+    if(d.type!=='static') a+=`<button class="btn btnd bsm adminonly" data-act="dellease" data-mac="${m}" title="Lease löschen">${ic('trash-2')}</button>`;
+    const ck=!d.is_static?`<input type="checkbox" class="chk" data-sel="${m}" ${sel.has(d.mac)?'checked':''}>`:'';
+    return `<tr>
+      <td class="adminonly" data-l="">${ck}</td>
+      <td class="c-name" data-l="Host">${nameOrStar(d.hostname)}${d.comment?`<div class="cmt">${esc(d.comment)}</div>`:''}</td>
+      <td class="mono" data-l="IP">${esc(d.ip)}</td>
+      <td class="mono muted col-mac" data-l="MAC">${m}</td>
+      <td class="muted col-exp" data-l="Lease bis">${fmtExp(d.expires)}</td>
+      <td class="col-type" data-l="Typ">${badge}</td>
+      <td class="c-act"><div class="act-btns">${a}</div></td></tr>`;
+  }).join('');
+  updateBulk(); lucide.createIcons();
+}
+function updateBulk(){$('bulkbar').classList.toggle('show',sel.size>0);$('bulkcnt').textContent=sel.size+' ausgewählt';}
+function clearSel(){sel.clear();$('selall').checked=false;renderAll();}
+function toggleAll(on){allDevices.filter(d=>!d.is_static&&d.ip).forEach(d=>on?sel.add(d.mac):sel.delete(d.mac));renderAll();}
+document.addEventListener('change',e=>{const c=e.target.closest('[data-sel]');if(c){const mac=c.dataset.sel.toLowerCase();c.checked?sel.add(mac):sel.delete(mac);updateBulk();}});
+const byMac=mac=>allDevices.find(d=>d.mac===mac)||leases.find(d=>d.mac===mac)||statics.find(d=>d.mac===mac);
+
+document.addEventListener('click',async e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const mac=b.dataset.mac,d=byMac(mac)||{mac},name=d.hostname||mac;
+  switch(b.dataset.act){
+    case 'adopt': openEdit({mode:'adopt',mac,ip:d.ip,hostname:d.hostname,comment:d.comment});break;
+    case 'edit':  openEdit({mode:'edit',mac,ip:d.static_ip||d.ip,hostname:d.static_hostname??d.hostname,comment:d.comment});break;
+    case 'renew': if(!ask(`Lease für ${name} zurücksetzen?`))return;{const [,er]=await api('POST','/api/lease/renew',{mac});if(er)return toast(er,'error');toast('Lease zurückgesetzt','success');setTimeout(refreshCurrent,800);}break;
+    case 'dellease': if(!ask(`Aktiven Lease für ${name} löschen?`))return;{const [,er]=await api('DELETE','/api/lease/'+mac);if(er)return toast(er,'error');toast('Lease gelöscht','info');setTimeout(refreshCurrent,800);}break;
+    case 'delstatic': if(!ask(`Statischen Eintrag für ${name} löschen?`))return;{const [,er]=await api('DELETE','/api/static/'+mac);if(er)return toast(er,'error');toast('Statischer Eintrag entfernt','info');setTimeout(refreshCurrent,500);}break;
+  }
 });
 
-document.getElementById('ttheme').addEventListener('click',()=>{
-  const r=document.documentElement;
-  r.setAttribute('data-theme',r.getAttribute('data-theme')==='dark'?'light':'dark');
+async function bulkAdopt(){
+  const items=[...sel].map(mac=>{const d=byMac(mac);return d&&{mac:d.mac,ip:d.ip,hostname:(d.hostname||'').toLowerCase().replace(/[^a-z0-9-]/g,'-').replace(/^-+|-+$/g,'').slice(0,63)};}).filter(Boolean);
+  if(!items.length) return;
+  if(!ask(`${items.length} Gerät(e) mit aktueller IP als statisch in Pi-hole speichern?`)) return;
+  const [d,e]=await api('POST','/api/static/bulk',{items}); if(e){toast(e,'error');return;}
+  (d.warnings||[]).forEach(w=>toast(w,'info')); toast(`${d.saved} Einträge gespeichert`,'success'); sel.clear(); refreshCurrent();
+}
+
+/* ── Modal Neu/Übernehmen/Bearbeiten ── */
+function openEdit(ctx){
+  editCtx=ctx;
+  $('e-title').textContent={new:'Neue statische IP',adopt:'Aus Liste übernehmen',edit:'Eintrag bearbeiten'}[ctx.mode];
+  $('e-mac').value=ctx.mac||'';$('e-ip').value=ctx.ip||'';$('e-host').value=ctx.hostname||'';$('e-cmt').value=ctx.comment||'';$('e-sugg').textContent='';
+  $('emodal').classList.add('open');lucide.createIcons();
+  setTimeout(()=>$(ctx.mode==='new'?'e-mac':'e-host').focus(),50);
+}
+function closeEdit(){$('emodal').classList.remove('open');editCtx=null;}
+async function suggestIp(){
+  const [d,e]=await api('GET','/api/free_ips?count=8'); if(e){toast(e,'error');return;}
+  if(!d.length){$('e-sugg').textContent='Keine freie IP gefunden';return;}
+  $('e-ip').value=d[0];
+  $('e-sugg').innerHTML='Weitere frei: '+d.slice(1).map(ip=>`<a href="#" class="mono" data-ip="${ip}" style="color:var(--pri);margin-right:.5rem">${ip}</a>`).join('');
+}
+$('e-sugg').addEventListener('click',e=>{const a=e.target.closest('[data-ip]');if(a){e.preventDefault();$('e-ip').value=a.dataset.ip;}});
+async function saveEdit(){
+  const mac=$('e-mac').value.trim(),ip=$('e-ip').value.trim(),hostname=$('e-host').value.trim(),comment=$('e-cmt').value.trim();
+  if(!mac||!ip){toast('MAC und IP sind Pflichtfelder','error');return;}
+  const c=editCtx; let r;
+  if(c.mode==='edit') r=await api('PUT','/api/static/'+encodeURIComponent(c.mac),{ip,hostname,comment,new_mac:mac});
+  else r=await api('POST','/api/static',{mac,ip,hostname,comment});
+  const [d,e]=r; if(e){toast(e,'error');return;}
+  (d.warnings||[]).forEach(w=>toast('⚠ '+w,'info'));
+  toast(`${hostname||mac} in Pi-hole gespeichert`,'success'); closeEdit(); refreshCurrent();
+}
+$('emodal').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.tagName==='INPUT')saveEdit();if(e.key==='Escape')closeEdit();});
+
+/* ── Leases ── */
+async function loadLeases(){
+  $('ltb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
+  const [d,e]=await api('GET','/api/leases'); if(e){toast('Leases: '+e,'error');return;}
+  leases=d||[];$('kl').textContent=leases.length;renderLeases();renderRecent();
+}
+function renderLeases(){
+  const q=($('lsearch').value||'').toLowerCase();
+  let f=sortData(leases,'leases'); if(q) f=f.filter(l=>(l.hostname+l.ip+l.mac).toLowerCase().includes(q));
+  if(S.hide_unnamed) f=f.filter(l=>l.hostname);
+  if(!f.length){$('ltb').innerHTML='<tr><td colspan="5" class="empty">Keine Einträge</td></tr>';return;}
+  $('ltb').innerHTML=f.map(l=>{const m=esc(l.mac);return `<tr>
+    <td class="c-name" data-l="Host">${nameOrStar(l.hostname)}</td><td class="mono" data-l="IP">${esc(l.ip)}</td>
+    <td class="mono muted col-mac" data-l="MAC">${m}</td><td class="muted col-exp" data-l="Lease bis">${fmtExp(l.expires)}</td>
+    <td class="c-act"><div class="act-btns">
+      <button class="btn btnp bsm adminonly" data-act="adopt" data-mac="${m}">${ic('bookmark-plus')} <span>Übernehmen</span></button>
+      <button class="btn btnw bsm adminonly" data-act="renew" data-mac="${m}">${ic('refresh-cw')}</button>
+      <button class="btn btnd bsm adminonly" data-act="dellease" data-mac="${m}">${ic('trash-2')}</button></div></td></tr>`;}).join('');
+  lucide.createIcons();
+}
+function renderRecent(){
+  $('rtb').innerHTML=leases.slice(0,8).map(l=>`<tr><td class="c-name" data-l="Host">${nameOrStar(l.hostname)}</td><td class="mono" data-l="IP">${esc(l.ip)}</td><td class="mono muted" data-l="MAC">${esc(l.mac)}</td><td class="muted" data-l="Lease bis">${fmtExp(l.expires)}</td><td data-l="Typ"><span class="badge bg">Aktiv</span></td></tr>`).join('')||'<tr><td colspan="5" class="empty">Keine Leases</td></tr>';
+}
+
+/* ── Static ── */
+async function loadStatic(){
+  $('stb').innerHTML='<tr><td colspan="5" class="empty"><span class="spin"></span> Lade…</td></tr>';
+  const [d,e]=await api('GET','/api/static'); if(e){toast('Static: '+e,'error');return;}
+  statics=d||[];$('ks').textContent=statics.length;renderStatic();
+}
+function renderStatic(){
+  const data=sortData(statics,'static');
+  if(!data.length){$('stb').innerHTML='<tr><td colspan="5" class="empty">Keine statischen Einträge</td></tr>';return;}
+  $('stb').innerHTML=data.map(s=>{const m=esc(s.mac);return `<tr>
+    <td class="c-name" data-l="Host">${s.hostname?esc(s.hostname):'—'}</td><td class="mono" data-l="IP">${esc(s.ip)}</td>
+    <td class="mono muted" data-l="MAC">${m}</td><td class="muted" data-l="Notiz">${esc(s.comment)||'—'}</td>
+    <td class="c-act"><div class="act-btns">
+      <button class="btn btns bsm adminonly" data-act="edit" data-mac="${m}">${ic('pencil')} <span>Bearbeiten</span></button>
+      <button class="btn btnd bsm adminonly" data-act="delstatic" data-mac="${m}">${ic('trash-2')}</button></div></td></tr>`;}).join('');
+  lucide.createIcons();
+}
+
+/* ── Config ── */
+async function loadConfig(){
+  const [d,e]=await api('GET','/api/config'); if(e){toast('Config: '+e,'error');return;}
+  cfg=d||{};
+  $('cdisplay').innerHTML=Object.entries(cfg).map(([k,v])=>`<div style="display:flex;flex-direction:column;gap:.25rem"><div class="fhint" style="font-weight:500">${esc(k)}</div><div class="mono" style="background:var(--soff);padding:.25rem .5rem;border-radius:var(--r);border:1px solid var(--bdr)">${esc(v)||'—'}</div></div>`).join('');
+  $('cs').value=cfg.DHCP_START||'';$('ce').value=cfg.DHCP_END||'';$('cr').value=cfg.DHCP_ROUTER||'';$('cl').value=cfg.DHCP_LEASETIME||'';$('cd1').value=cfg.PIHOLE_DNS_1||'';$('cd2').value=cfg.PIHOLE_DNS_2||'';
+  const s=ipN(cfg.DHCP_START),en=ipN(cfg.DHCP_END); if(s&&en) $('kp').textContent=en-s+1;
+  $('kt').textContent=cfg.DHCP_LEASETIME||'—';
+}
+async function saveConfig(){
+  const [,e]=await api('POST','/api/config',{DHCP_START:$('cs').value.trim(),DHCP_END:$('ce').value.trim(),DHCP_ROUTER:$('cr').value.trim(),DHCP_LEASETIME:$('cl').value.trim(),PIHOLE_DNS_1:$('cd1').value.trim(),PIHOLE_DNS_2:$('cd2').value.trim()});
+  if(e){toast('Fehler: '+e,'error');return;} toast('Gespeichert ✓','success'); loadConfig();
+}
+
+/* ── Log ── */
+async function loadLog(filter='all'){
+  curLogFilter=filter;$('logpre').textContent='Lade…';
+  const [d,e]=await api('GET','/api/log'); if(e){$('logpre').textContent='Fehler: '+e;return;}
+  let lines=d.lines||[]; if(filter!=='all') lines=lines.filter(l=>l.includes(filter));
+  $('logpre').innerHTML=lines.length?lines.map(l=>{let c='';
+    if(l.includes('DHCPACK'))c='color:var(--ok)';else if(l.includes('DHCPOFFER'))c='color:var(--pri)';else if(l.includes('DHCPREQUEST'))c='color:var(--warn)';else if(l.includes('DHCPDISCOVER'))c='color:var(--blu)';
+    return `<span style="${c}">${esc(l)}</span>`;}).join('\n'):'[Keine Einträge gefunden]';
+}
+
+/* ── Backup ── */
+async function exportAll(){
+  const [d,e]=await api('GET','/api/export'); if(e){toast(e,'error');return;}
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(d,null,2)],{type:'application/json'}));
+  a.download=`hai-peedhcp-${new Date().toISOString().slice(0,10)}.json`;a.click();URL.revokeObjectURL(a.href);
+}
+$('impfile').addEventListener('change',async ev=>{
+  const f=ev.target.files[0]; if(!f) return;
+  try{
+    const j=JSON.parse(await f.text());
+    if(!confirm(`${(j.hosts||[]).length} Einträge aus „${f.name}“ mit Pi-hole zusammenführen?`)) return;
+    const [d,e]=await api('POST','/api/import',{hosts:j.hosts,mode:'merge'}); if(e){toast(e,'error');return;}
+    toast(`${d.saved} Einträge importiert`,'success'); refreshCurrent();
+  }catch(x){toast('Ungültige Datei','error');} ev.target.value='';
+});
+
+/* ── Navigation ── */
+function show(v){
+  document.querySelectorAll('.nitem,.bn').forEach(n=>n.classList.toggle('active',n.dataset.view===v));
+  document.querySelectorAll('.view').forEach(vv=>vv.classList.toggle('active',vv.id==='view-'+v));
+  history.replaceState(null,'','#'+v); window.scrollTo(0,0);
+  ({all:loadAll,leases:loadLeases,static:loadStatic,config:loadConfig,log:loadLog,admin:()=>{fillAdminForm();}})[v]?.();
+}
+function curView(){return document.querySelector('.view.active').id.replace('view-','');}
+function refreshCurrent(){const v=curView();if(v==='overview')initAll();else if(['all','leases','static','config','log'].includes(v))({all:loadAll,leases:loadLeases,static:loadStatic,config:loadConfig,log:()=>loadLog(curLogFilter)})[v]();}
+document.querySelectorAll('.nitem,.bn').forEach(n=>n.addEventListener('click',()=>show(n.dataset.view)));
+$('ttheme').addEventListener('click',()=>{
+  const cur=document.documentElement.getAttribute('data-theme');
+  applySettings({...S,theme:cur==='dark'?'light':'dark'}); if(isAdmin&&!pinRequired) api('POST','/api/settings',{theme:S.theme});
 });
 
 async function initAll(){
   await checkHealth();
   await Promise.all([loadLeases(),loadStatic(),loadConfig()]);
 }
-
-window.addEventListener('DOMContentLoaded',()=>{lucide.createIcons();initAll();});
+window.addEventListener('DOMContentLoaded',async()=>{
+  try{applySettings(JSON.parse(localStorage.getItem('hai_settings')||'{}'));}catch{applySettings({});}
+  lucide.createIcons();
+  const [d]=await api('GET','/api/settings');
+  if(d){pinRequired=d.pin_required;isAdmin=!pinRequired||(!!token&&d.is_admin);applySettings(d.settings);}
+  applyAdminUI();
+  await initAll();
+  const h=location.hash.slice(1); show(['overview','all','leases','static','config','log','admin'].includes(h)?h:S.default_view);
+});
 </script>
 </body>
 </html>
