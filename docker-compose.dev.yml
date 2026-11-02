@@ -1,0 +1,29 @@
+services:
+  dhcp-admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: hai-peedhcp:dev
+    ports:
+      - "${HAI_PEEDHCP_PORT:-8095}:8080"
+    environment:
+      PIHOLE_URL: ${PIHOLE_URL:-http://192.168.178.1}
+      PIHOLE_PASSWORD: ${PIHOLE_PASSWORD:-}
+      ADMIN_PIN: ${ADMIN_PIN:-}
+      SECRET_KEY: ${SECRET_KEY:-}
+      ALLOW_UNAUTHENTICATED_WRITES: ${ALLOW_UNAUTHENTICATED_WRITES:-true}
+      PIHOLE_TLS_INSECURE: ${PIHOLE_TLS_INSECURE:-false}
+      PIHOLE_CA_BUNDLE: ${PIHOLE_CA_BUNDLE:-}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TZ: ${TZ:-Europe/Berlin}
+      DATA_DIR: /app/data
+      FRONTEND_DIR: /app/frontend
+    volumes:
+      - ./frontend:/app/frontend:ro
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/livez"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
