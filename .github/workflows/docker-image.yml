@@ -28,6 +28,8 @@ jobs:
         run: |
           docker run --rm peedhcp:test python -c "import ast,pathlib; [ast.parse(p.read_text(encoding='utf-8'),filename=str(p)) for p in pathlib.Path('/app/backend').rglob('*.py')]"
           docker run --rm peedhcp:test pip check
+      - name: Isolated backend regression tests
+        run: docker run --rm --network none -v "$GITHUB_WORKSPACE/tests:/tests:ro" -e DATA_DIR=/tmp/peedhcp-tests -e SECRET_KEY=ci-only-signing-secret-not-for-production peedhcp:test python -m unittest discover -s /tests -v
       - name: Smoke test without live Pi-hole
         shell: bash
         run: |
