@@ -1,32 +1,31 @@
-# hAI.PeeDHCP – Portainer Stack
-
+# Portainer: Variablen unter Environment variables setzen.
+# Bestehende ./data vor Umstellung sichern; siehe docs/PORTAINER.md.
 services:
   dhcp-admin:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: dhcp-admin:latest
-    container_name: dhcp-admin
+    image: ghcr.io/jbkunama1/hai.peedhcp:${IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
-      - "8095:8080"
-    env_file: .env
+      - "${APP_PORT:-8095}:8080"
+    environment:
+      PIHOLE_URL: ${PIHOLE_URL:?PIHOLE_URL setzen}
+      PIHOLE_PASSWORD: ${PIHOLE_PASSWORD:?PIHOLE_PASSWORD setzen}
+      ADMIN_PIN: ${ADMIN_PIN:?ADMIN_PIN setzen}
+      SECRET_KEY: ${SECRET_KEY:?Unabhaengigen langen SECRET_KEY setzen}
+      DATA_DIR: /app/data
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      TZ: Europe/Berlin
     volumes:
-      # Frontend live vom Host – kein Rebuild bei UI-Änderungen nötig
-      - ./frontend:/app/frontend:ro
-      # Einstellungen + Notizen (settings.json, meta.json) bleiben erhalten
-      - ./data:/app/data
-    networks:
-      - default
+      - ${DATA_SOURCE:-peedhcp_data}:/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      test: ["CMD", "curl", "--fail", "--silent", "--max-time", "5", "http://localhost:8080/"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 10s
-    labels:
-      - "traefik.enable=false"
-
-networks:
-  default:
-    driver: bridge
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+volumes:
+  peedhcp_data:

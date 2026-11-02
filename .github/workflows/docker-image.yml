@@ -1,8 +1,4 @@
 name: Docker Image (GHCR)
-
-# Baut das Image und pusht es automatisch nach ghcr.io.
-# Läuft bei Push auf main sowie bei Tags (v*).
-
 on:
   push:
     branches: [main]
@@ -10,48 +6,87 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
-
+permissions:
+  contents: read
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository }}
-
+  IMAGE_NAME: ghcr.io/jbkunama1/hai.peedhcp
 jobs:
+  smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate production stack
+        env:
+          PIHOLE_URL: http://127.0.0.1:9
+          PIHOLE_PASSWORD: ci-dummy
+          ADMIN_PIN: ci-dummy
+          SECRET_KEY: ci-only-signing-secret-not-for-production
+        run: docker compose config --quiet
+      - name: Build test image
+        run: docker build --pull -t peedhcp:test .
+      - name: Check syntax and dependencies
+        run: |
+          docker run --rm peedhcp:test python -c "import ast,pathlib; [ast.parse(p.read_text(encoding='utf-8'),filename=str(p)) for p in pathlib.Path('/app/backend').rglob('*.py')]"
+          docker run --rm peedhcp:test pip check
+      - name: Smoke test without live Pi-hole
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker volume create peedhcp-ci
+          docker run -d --name peedhcp-ci -p 127.0.0.1:18095:8080 -v peedhcp-ci:/app/data -e PIHOLE_URL=http://127.0.0.1:9 -e PIHOLE_PASSWORD=ci-dummy -e ADMIN_PIN=ci-dummy -e SECRET_KEY=ci-only-signing-secret-not-for-production peedhcp:test
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18095/ >/dev/null; then break; fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:18095/ >/dev/null
+          test "$(docker exec peedhcp-ci id -u)" != 0
+          docker exec peedhcp-ci python -c "from pathlib import Path; Path('/app/data/ci-probe').write_text('persistent')"
+          docker restart peedhcp-ci
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18095/api/settings >/dev/null; then break; fi
+            sleep 2
+          done
+          curl --fail --silent http://127.0.0.1:18095/api/settings >/dev/null
+          docker exec peedhcp-ci python -c "from pathlib import Path; assert Path('/app/data/ci-probe').read_text() == 'persistent'"
+          docker exec peedhcp-ci curl --fail --silent http://localhost:8080/ >/dev/null
+          test "$(curl --silent -o /dev/null -w '%{http_code}' http://127.0.0.1:18095/api/health)" = 502
+      - name: Container diagnostics
+        if: failure()
+        run: docker logs peedhcp-ci || true
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f peedhcp-ci || true
+          docker volume rm peedhcp-ci || true
   build-and-push:
+    needs: smoke-test
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
-
     steps:
-      - name: Check out repo
-        uses: actions/checkout@v4
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
       - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata (tags, labels)
+      - name: Image tags
         id: meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ env.IMAGE_NAME }}
+          flavor: latest=false
           tags: |
-            type=ref,event=branch,suffix=-latest
+            type=sha,prefix=sha-,format=long
             type=ref,event=tag
-            type=sha,prefix=
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
-          flavor: |
-            latest=auto
-
-      - name: Build & push
+            type=ref,event=pr
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+      - name: Build multi-platform image
         uses: docker/build-push-action@v6
         with:
           context: .
