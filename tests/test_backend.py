@@ -49,7 +49,7 @@ class BackendContractTests(unittest.TestCase):
         self.assertEqual(json.loads(Path(self.tmp.name, 'settings.json').read_text())['title'], 'Mein Netz')
 
     def test_settings_reset(self):
-        response = self.client.post('/api/settings/reset', headers=self.headers)
+        response = self.client.post('/api/settings/reset', json={}, headers=self.headers)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get_json()['settings'], b.DEFAULTS)
 
